@@ -15,6 +15,7 @@ import numpy as np
 from utils import load_batched_data
 
 INPUT_PATH = '../TRAIN/All/mfcc/'  # directory of MFCC nFeatures x nFrames 2-D array .npy files
+TARGET_PATH = './sample_data/char_y/' #directory of nCharacters 1-D array .npy files
 
 ####Learning Parameters
 learningRate = 0.001
@@ -24,8 +25,8 @@ batchSize = 128  #
 
 ####Network Parameters
 nFeatures = 26  # 12 MFCC coefficients + energy, and derivatives
-# nHidden = 128
-# nClasses = 40 #39 phonemes, plus the "blank" for CTC
+nHidden = 128
+nClasses = 40 #39 phonemes, plus the "blank" for CTC
 
 ####Load data
 print('Loading data')
