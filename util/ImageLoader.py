@@ -1,4 +1,5 @@
 from __future__ import print_function
+from PIL import Image
 import tensorflow as tf
 import numpy as np
 import os
@@ -56,10 +57,20 @@ class ImageLoader:
     def getNextBatch(self):
         # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         # load #batchSize images & labels and return as tensors
-        # need to load/convert images as tensors
-
         fileNamesBatch = self._fileNames[self._index_in_epoch:self._index_in_epoch + self._batchSize]
         labelsBatch = self._labels[self._index_in_epoch:self._index_in_epoch + self._batchSize]
+
+        # need to load/convert images as tensors
+        filenameQueue = tf.train.string_input_producer(fileNamesBatch)
+
+        reader = tf.WholeFileReader()
+        tmpList = []
+        for _ in xrange(self._batchSize):
+            imgKey, imgValue = reader.read(filenameQueue)
+            img = tf.image.decode_jpeg(imgValue)
+            tmpList.append(img)
+        images = tf.convert_to_tensor(tmpList)
+        labels = tf.convert_to_tensor(labelsBatch, dtype=tf.string)
 
         self._index_in_epoch += self._batchSize
 
@@ -74,6 +85,8 @@ class ImageLoader:
             self._fileNames = self._fileNames[perm]
             self._labels = self._labels[perm]
 
+        return images, labels
+
 
 
 if __name__ == '__main__':
@@ -81,22 +94,34 @@ if __name__ == '__main__':
 
     loader = ImageLoader(filename)
 
-    # Reads pfathes of images together with their labels
-    image_list, label_list = loader.read_labeled_image_list(filename)
-
-    images = tf.convert_to_tensor(image_list, dtype=tf.string)
-    labels = tf.convert_to_tensor(label_list, dtype=tf.string)
-
-    # Makes an input queue
-    input_queue = tf.train.slice_input_producer([images, labels],
-                                                num_epochs=num_epochs,
-                                                shuffle=True)
-
+    # # Reads pathes of images together with their labels
+    # image_list, label_list = loader.read_labeled_image_list(filename)
+    #
+    # images = tf.convert_to_tensor(image_list, dtype=tf.string)
+    # labels = tf.convert_to_tensor(label_list, dtype=tf.string)
+    #
+    # # Makes an input queue
+    # input_queue = tf.train.slice_input_producer([images, labels],
+    #                                             num_epochs=num_epochs,
+    #                                             shuffle=True)
+    #
     image, label = loader.read_images_from_disk(input_queue)
 
-    print(input_queue)
-    print(image_list)
-    print(label_list)
+
+    sess = tf.Session()
+    sess.run(tf.initialize_all_variables())
+    coord = tf.train.Coordinator()
+    threads = tf.train.start_queue_runners(coord=coord)
+
+    for i in range():  # length of your filename list
+        image = my_img.eval()  # here is your image Tensor :)
+
+    print(image.shape)
+    Image.show(Image.fromarray(np.asarray(image)))
+
+    coord.request_stop()
+    coord.join(threads)
+
 
     # Optional Preprocessing or Data Augmentation
     # tf.image implements most of the standard image augmentation
