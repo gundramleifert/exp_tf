@@ -2,6 +2,7 @@ from __future__ import print_function
 # from PIL import Image
 import tensorflow as tf
 from scipy import misc
+import matplotlib.pyplot as plt
 from tensorflow.python.framework import dtypes
 import numpy as np
 import os
@@ -120,6 +121,15 @@ if __name__ == '__main__':
         #     print("\tLabel: " + str(labels[i]))
         #     print("\tShape: " + str(images[i].shape))
 
+    plt.subplot(1,2,1)
+    plt.imshow(images[0])
+    plt.axis('off')
+
+    plt.subplot(1,2,2)
+    plt.imshow(images[1])
+    plt.axis('off')
+
+    plt.show()
 
     # init_op = tf.initialize_all_variables()
     # sess = tf.Session()
