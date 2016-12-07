@@ -34,7 +34,7 @@ channels = 1
 nHiddenLSTM1 = 64
 nHiddenLSTM2 = 64
 
-os.chdir("..")
+os.chdir("../..")
 trainList = read_image_list(INPUT_PATH_TRAIN)
 stepsPerEpocheTrain = len(trainList)/batchSize
 valList = read_image_list(INPUT_PATH_VAL)
