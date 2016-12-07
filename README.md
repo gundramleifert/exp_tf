@@ -21,6 +21,10 @@ GET STARTED WITH TENSORFLOW
 
 4. Try tutorial: https://www.tensorflow.org/versions/master/tutorials/mnist/tf/index.html
 
+Other Tutorials and examples:
+https://github.com/sherrym/tf-tutorial
+https://github.com/aymericdamien/TensorFlow-Examples.git
+
 ==> do not try to understand anything without reading these in advance :-)
 
 
