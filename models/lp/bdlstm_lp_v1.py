@@ -33,6 +33,8 @@ imgW = 100
 channels = 1
 nHiddenLSTM1 = 64
 nHiddenLSTM2 = 64
+nHiddenInner = 128
+dropout = 0.5
 
 os.chdir("../..")
 trainList = read_image_list(INPUT_PATH_TRAIN)
@@ -120,11 +122,19 @@ def inference(images, seqLen):
     #outH2 = [tf.reduce_sum(tf.mul(t, weightsOutH2), reduction_indices=1) + biasesOutH2 for t in fbH1rs2]
     outH2 = [tf.reduce_sum(t, reduction_indices=1) for t in fbH1rs2]
   with tf.variable_scope('LOGIT') as scope:
-    weightsClasses = tf.Variable(tf.truncated_normal([nHiddenLSTM2, nClasses],
-                                                       stddev=np.sqrt(2.0 / nHiddenLSTM1)))
+    weightsHid = tf.Variable(tf.truncated_normal([nHiddenLSTM2, nHiddenInner],
+                                                       stddev=np.sqrt(2.0 / nHiddenLSTM2)))
+    biasesHid = tf.Variable(tf.zeros([nHiddenInner]))
+    logits = [tf.matmul(t, weightsHid) + biasesHid for t in outH2]
+    acti = [tf.nn.relu(t) for t in logits]
+    dropped = [tf.nn.dropout(t, dropout) for t in acti]
+
+    weightsClasses = tf.Variable(tf.truncated_normal([nHiddenInner, nClasses],
+                                                     stddev=np.sqrt(2.0 / nHiddenInner)))
     biasesClasses = tf.Variable(tf.zeros([nClasses]))
-    logits = [tf.matmul(t, weightsClasses) + biasesClasses for t in outH2]
-    logits3d = tf.pack(logits)
+    logitsFin = [tf.matmul(t, weightsClasses) + biasesClasses for t in dropped]
+
+    logits3d = tf.pack(logitsFin)
   return logits3d, seqLenAfterConv
 
 def loss(logits3d, tgt, seqLenAfterConv):
@@ -146,7 +156,10 @@ with graph.as_default():
     loss = loss(logits3d, targetY, seqAfterConv)
     optimizer = tf.train.MomentumOptimizer(learningRate, momentum).minimize(loss)
     pred = tf.to_int32(ctc.ctc_beam_search_decoder(logits3d, seqAfterConv)[0][0])
-    err = tf.reduce_sum(tf.edit_distance(pred, targetY, normalize=False)) / tf.to_float(tf.size(targetY.values))
+    edist = tf.edit_distance(pred, targetY, normalize=False)
+    tgtLens = tf.to_float(tf.size(targetY.values))
+    err = tf.reduce_sum(edist) / tgtLens
+    saver = tf.train.Saver()
     # err_train = tf.scalar_summary('CER_TRAIN', err)
     # loss_train = tf.scalar_summary('LOSS_TRAIN', loss)
     # err_val = tf.scalar_summary('CER_VAL', err)
@@ -154,6 +167,7 @@ with graph.as_default():
 
 
 with tf.Session(graph=graph) as session:
+
     # writer = tf.train.SummaryWriter('./log', session.graph)
     print('Initializing')
     tf.initialize_all_variables().run()
@@ -161,8 +175,9 @@ with tf.Session(graph=graph) as session:
         workList = trainList[:]
         shuffle(workList)
         print('Epoch', epoch + 1, '...')
-        lossE = 0
-        errR = 0
+        lossT = 0
+        errT = 0
+        timeTS = time.time()
         for bStep in range(stepsPerEpocheTrain):
             bList, workList = workList[:batchSize], workList[batchSize:]
             batchInputs, batchSeqLengths, batchTargetIdxs, batchTargetVals, batchTargetShape = get_list_vals(bList, cm, imgW, mvn=True)
@@ -170,19 +185,20 @@ with tf.Session(graph=graph) as session:
                         targetShape: batchTargetShape, seqLengths: batchSeqLengths}
             _, lossB, aErr = session.run([optimizer, loss, err], feed_dict=feedDict)
             # _, lossB, aErr, sET, sLT = session.run([optimizer, loss, err, err_train, loss_train], feed_dict=feedDict)
-            lossE += lossB
+            lossT += lossB
             # writer.add_summary(sET, epoch * stepsPerEpocheTrain + bStep)
             # writer.add_summary(sLT, epoch * stepsPerEpocheTrain + bStep)
-            #print(lossE)
-            errR += aErr
-        print('Train: CTC-loss ',lossE)
-        cerT = errR/stepsPerEpocheTrain
+            errT += aErr
+        print('Train: CTC-loss ',lossT)
+        cerT = errT/stepsPerEpocheTrain
         print('Train: CER ' , cerT)
+        print('Train time ', time.time()-timeTS)
         workList = valList[:]
         errV = 0
+        lossV = 0
+        timeVS = time.time()
         for bStep in range(stepsPerEpocheVal):
             bList, workList = workList[:batchSize], workList[batchSize:]
-            #print(bList)
             batchInputs, batchSeqLengths, batchTargetIdxs, batchTargetVals, batchTargetShape = get_list_vals(bList, cm,
                                                                                                              imgW,
                                                                                                              mvn=True)
@@ -192,10 +208,14 @@ with tf.Session(graph=graph) as session:
             # lossB, aErr, sE, sL = session.run([loss, err, err_val, loss_val], feed_dict=feedDict)
             # writer.add_summary(sE, epoch*stepsPerEpocheVal + bStep)
             # writer.add_summary(sL, epoch * stepsPerEpocheVal + bStep)
-            lossE += lossB
-            errR += aErr
-        print('Val: CTC-loss ', lossE)
-        errVal = errR / stepsPerEpocheVal
+            lossV += lossB
+            errV += aErr
+        print('Val: CTC-loss ', lossV)
+        errVal = errV / stepsPerEpocheVal
         print('Val: CER ', errVal)
+        print('Val time ', time.time() - timeVS)
+        # Write a checkpoint.
+        checkpoint_file = os.path.join('/home/tobias/devel/projects/TF/model/lp/', 'checkpoint')
+        saver.save(session, checkpoint_file, global_step=epoch)
 
 
