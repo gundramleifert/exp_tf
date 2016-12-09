@@ -45,7 +45,7 @@ accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 learning_rate = 0.003
 optimizer = tf.train.AdamOptimizer(learning_rate)
 train_step = optimizer.minimize(cross_entropy)
-init = tf.initialize_all_variables()
+init = tf.global_variables_initializer()
 sess = tf.Session()
 sess.run(init)
 
