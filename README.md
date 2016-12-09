@@ -1,6 +1,17 @@
 # exp_tf
 experimental - first tests with tensorflow
 
+INSTALL THE LATEST VERSION OF TENSORFLOW
+(see also https://www.tensorflow.org/versions/r0.12/get_started/os_setup.html#using-pip)
+
+1. Go into your tensorflow environment (source activate tensorflow)
+2. Type in:
+   export TF_BINARY_URL=https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-0.12.0rc0-cp27-none-linux_x86_64.whl
+   (For newer versions get the latest url)
+3. Execute the following command for Python 2:
+   pip install --ignore-installed --upgrade $TF_BINARY_URL
+
+
 This are links from Tobi that shows how to load data
 
  http://stackoverflow.com/questions/34340489/tensorflow-read-images-with-labels
