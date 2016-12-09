@@ -1,7 +1,9 @@
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
+import os
 
-mnist = input_data.read_data_sets("MNIST_data/", one_hot=True, reshape=False, validation_size=0)
+os.chdir("../..")  # to root path
+mnist = input_data.read_data_sets("resources/MNIST_data/", one_hot=True, reshape=False, validation_size=0)
 
 K = 200
 L = 100
@@ -25,12 +27,12 @@ W5 = tf.Variable(tf.truncated_normal([N, 10], stddev=0.1))
 B5 = tf.Variable(tf.zeros([10]))
 
 # model
-XX = tf.reshape(X, [-1, 28*28])                 # Input Layer
-Y1 = tf.nn.sigmoid(tf.matmul(XX, W1) + B1)      # Hidden Layer 1
-Y2 = tf.nn.sigmoid(tf.matmul(Y1, W2) + B2)      # Hidden Layer 2
-Y3 = tf.nn.sigmoid(tf.matmul(Y2, W3) + B3)      # Hidden Layer 3
-Y4 = tf.nn.sigmoid(tf.matmul(Y3, W4) + B4)      # Hidden Layer 4
-Ylogits = tf.matmul(Y4, W5) + B5                # Output Layer
+XX = tf.reshape(X, [-1, 28 * 28])  # Input Layer
+Y1 = tf.nn.sigmoid(tf.matmul(XX, W1) + B1)  # Hidden Layer 1
+Y2 = tf.nn.sigmoid(tf.matmul(Y1, W2) + B2)  # Hidden Layer 2
+Y3 = tf.nn.sigmoid(tf.matmul(Y2, W3) + B3)  # Hidden Layer 3
+Y4 = tf.nn.sigmoid(tf.matmul(Y3, W4) + B4)  # Hidden Layer 4
+Ylogits = tf.matmul(Y4, W5) + B5  # Output Layer
 Y = tf.nn.softmax(Ylogits)
 
 # loss function
@@ -45,7 +47,7 @@ accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 learning_rate = 0.003
 optimizer = tf.train.AdamOptimizer(learning_rate)
 train_step = optimizer.minimize(cross_entropy)
-init = tf.initialize_all_variables()
+init = tf.global_variables_initializer()
 sess = tf.Session()
 sess.run(init)
 

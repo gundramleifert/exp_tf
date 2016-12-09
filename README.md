@@ -48,3 +48,15 @@ maybe interesting for HPCs: https://www.tensorflow.org/versions/master/how_tos/d
 COMMON ERRORS:
 do not find tensorflow-sources/packages:
 File=>Settings...=> Project: exp_tf => set default project interpreter => tensorflow
+
+TensorBoard does not show the experiments
+bash: >source activate tensorflow
+
+mothods of scipy do not work ("AttributeError: 'module' object has no attribute'<method>'":
+source activate tensorflow
+conda install pillow
+
+out of Memory using GPUs:
+gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.333) sess = tf.Session(config=tf.ConfigProto(log_device_placement=True, gpu_options=gpu_options))
+or:
+export CUDA_VISIBLE_DEVICES=1
