@@ -16,7 +16,10 @@ def read_image_list(pathToList):
     f = open(pathToList, 'r')
     filenames = []
     for line in f:
-        filenames.append(line[:-1])
+        if(line[-1]=='\n'):
+            filenames.append(line[:-1])
+        else:
+            filenames.append(line)
     f.close()
     return filenames
 
