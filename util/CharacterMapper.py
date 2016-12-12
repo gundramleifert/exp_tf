@@ -86,7 +86,7 @@ class CharacterMapper:
                 print(line)
                 split = line.rsplit('=', 1)
                 key = split[0]
-                index = int(split[1])
+                index = int(split[1]) - 1
                 # specific values which are escaped by '\': delete '\'
                 if key[0] == '\\':
                     key = key[1:]
@@ -100,7 +100,6 @@ class CharacterMapper:
         # print(str(key)+" => "+(self.dictBwd.get(key)))
         print(self.dictFwd)
         print(self.dictBwd)
-
 
 # if __name__ == '__main__':
 #     os.chdir("..")
