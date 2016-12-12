@@ -16,8 +16,8 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 
-INPUT_PATH_TRAIN = './resources/lp_only_train.lst'
-INPUT_PATH_VAL = './resources/lp_only_val.lst'
+INPUT_PATH_TRAIN = './private/lists/lp_only_train.lst'
+INPUT_PATH_VAL = './private/lists/lp_only_val.lst'
 cm, nClasses = get_charmap_lp()
 # Additional NaC Channel
 nClasses += 1
