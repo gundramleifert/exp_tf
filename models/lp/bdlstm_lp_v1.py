@@ -27,13 +27,13 @@ batchSize = 16
 learningRate = 0.001
 momentum = 0.9
 # It is assumed that the TextLines are ALL saved with a consistent height of imgH
-imgH = 20
+imgH = 48
 # Depending on the size the image is cropped or zero padded
-imgW = 100
+imgW = 256
 channels = 1
-nHiddenLSTM1 = 64
-nHiddenLSTM2 = 64
-nHiddenInner = 128
+nHiddenLSTM1 = 256
+# nHiddenLSTM2 = 64
+nHiddenInner = 512
 dropout = 0.5
 
 os.chdir("../..")
@@ -45,50 +45,49 @@ stepsPerEpocheVal = len(valList) / batchSize
 
 def inference(images, seqLen):
     with tf.variable_scope('conv1') as scope:
-        kernel = tf.Variable(tf.truncated_normal([5, 5, channels, 16], stddev=5e-2), name='weights')
+        kernel = tf.Variable(tf.truncated_normal([5, 5, channels, 84], stddev=5e-2), name='weights')
         ##Weight Decay?
         # weight_decay = tf.mul(tf.nn.l2_loss(kernel), 0.002, name='weight_loss')
         # tf.add_to_collection('losses', weight_decay)
         conv = tf.nn.conv2d(images, kernel, [1, 1, 1, 1], padding='SAME')
-        biases = tf.Variable(tf.constant(0.1, shape=[16]), name='biases')
+        biases = tf.Variable(tf.constant(0.1, shape=[84]), name='biases')
         pre_activation = tf.nn.bias_add(conv, biases)
         conv1 = tf.nn.relu(pre_activation, name=scope.name)
         # _activation_summary(conv1)
-        pool1 = tf.nn.max_pool(conv1, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1],
+        pool1 = tf.nn.max_pool(conv1, ksize=[1, 4, 3, 1], strides=[1, 4, 3, 1],
                                padding='SAME', name='pool1')
         # norm1 = tf.nn.local_response_normalization(pool1, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75,name='norm1')
         seqFloat = tf.to_float(seqLen)
-        seqL2 = tf.ceil(seqFloat * 0.5)
+        seqL2 = tf.ceil(seqFloat * 0.33)
     with tf.variable_scope('conv2') as scope:
-        kernel = tf.Variable(tf.truncated_normal([5, 5, 16, 64], stddev=5e-2), name='weights')
+        kernel = tf.Variable(tf.truncated_normal([5, 5, 84, 40], stddev=5e-2), name='weights')
         ##Weight Decay?
         # weight_decay = tf.mul(tf.nn.l2_loss(kernel), 0.002, name='weight_loss')
         # tf.add_to_collection('losses', weight_decay)
         conv = tf.nn.conv2d(pool1, kernel, [1, 1, 1, 1], padding='SAME')
-        biases = tf.Variable(tf.constant(0.1, shape=[64]), name='biases')
+        biases = tf.Variable(tf.constant(0.1, shape=[40]), name='biases')
         pre_activation = tf.nn.bias_add(conv, biases)
         conv2 = tf.nn.relu(pre_activation, name=scope.name)
         # _activation_summary(conv2)
         # norm2
         # norm2 = tf.nn.local_response_normalization(conv2, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75,name='norm2')
-        pool2 = tf.nn.max_pool(conv2, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1], padding='SAME', name='pool2')
+        pool2 = tf.nn.max_pool(conv2, ksize=[1, 4, 2, 1], strides=[1, 4, 2, 1], padding='SAME', name='pool2')
         seqL3 = tf.ceil(seqL2 * 0.5)
     with tf.variable_scope('conv3') as scope:
-        kernel = tf.Variable(tf.truncated_normal([5, 5, 64, 128], stddev=5e-2), name='weights')
+        kernel = tf.Variable(tf.truncated_normal([5, 5, 40, 512], stddev=5e-2), name='weights')
         ##Weight Decay?
         # weight_decay = tf.mul(tf.nn.l2_loss(kernel), 0.002, name='weight_loss')
         # tf.add_to_collection('losses', weight_decay)
         conv = tf.nn.conv2d(pool2, kernel, [1, 1, 1, 1], padding='SAME')
-        biases = tf.Variable(tf.constant(0.1, shape=[128]), name='biases')
+        biases = tf.Variable(tf.constant(0.1, shape=[512]), name='biases')
         pre_activation = tf.nn.bias_add(conv, biases)
         conv3 = tf.nn.relu(pre_activation, name=scope.name)
-        # _activation_summary(conv2)
-        # norm2 = tf.nn.local_response_normalization(conv2, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75,name='norm2')
+        pool3 = tf.nn.max_pool(conv3, ksize=[1, 3, 1, 1], strides=[1, 3, 1, 1], padding='SAME', name='pool2')
         # NO POOLING HERE -> CTC needs an appropriate length.
         seqLenAfterConv = tf.to_int32(seqL3)
     with tf.variable_scope('RNN_Prep') as scope:
         # (#batch Y X Z) --> (X #batch Y Z)
-        rnnIn = tf.transpose(conv3, [2, 0, 1, 3])
+        rnnIn = tf.transpose(pool3, [2, 0, 1, 3])
         # (X #batch Y Z) --> (X #batch Y*Z)
         shape = rnnIn.get_shape()
         steps = shape[0]
@@ -109,23 +108,11 @@ def inference(images, seqLen):
         fbH1rs = [tf.reshape(t, [batchSize, 2, nHiddenLSTM1]) for t in outputs]
         # outH1 = [tf.reduce_sum(tf.mul(t, weightsOutH1), reduction_indices=1) + biasesOutH1 for t in fbH1rs]
         outH1 = [tf.reduce_sum(t, reduction_indices=1) for t in fbH1rs]
-    with tf.variable_scope('BLSTM2') as scope:
-        # Some kind of attention model -> switched it off for first tests
-        # weightsOutH2 = tf.Variable(tf.truncated_normal([2, nHiddenLSTM2],
-        #                                                 stddev=np.sqrt(2.0 / (2 * nHiddenLSTM2))))
-        # biasesOutH2 = tf.Variable(tf.zeros([nHiddenLSTM2]))
-        forwardH2 = rnn_cell.LSTMCell(nHiddenLSTM2, use_peepholes=True, state_is_tuple=True)
-        backwardH2 = rnn_cell.LSTMCell(nHiddenLSTM2, use_peepholes=True, state_is_tuple=True)
-        outputs2, _, _ = bidirectional_rnn(forwardH2, backwardH2, outH1, dtype=tf.float32)
-
-        fbH1rs2 = [tf.reshape(t, [batchSize, 2, nHiddenLSTM2]) for t in outputs2]
-        # outH2 = [tf.reduce_sum(tf.mul(t, weightsOutH2), reduction_indices=1) + biasesOutH2 for t in fbH1rs2]
-        outH2 = [tf.reduce_sum(t, reduction_indices=1) for t in fbH1rs2]
     with tf.variable_scope('LOGIT') as scope:
-        weightsHid = tf.Variable(tf.truncated_normal([nHiddenLSTM2, nHiddenInner],
-                                                     stddev=np.sqrt(2.0 / nHiddenLSTM2)))
+        weightsHid = tf.Variable(tf.truncated_normal([nHiddenLSTM1, nHiddenInner],
+                                                     stddev=np.sqrt(2.0 / nHiddenLSTM1)))
         biasesHid = tf.Variable(tf.zeros([nHiddenInner]))
-        logits = [tf.matmul(t, weightsHid) + biasesHid for t in outH2]
+        logits = [tf.matmul(t, weightsHid) + biasesHid for t in outH1]
         acti = [tf.nn.relu(t) for t in logits]
         dropped = [tf.nn.dropout(t, dropout) for t in acti]
 
@@ -216,5 +203,5 @@ with tf.Session(graph=graph) as session:
         print('Val: CER ', errVal)
         print('Val time ', time.time() - timeVS)
         # Write a checkpoint.
-        checkpoint_file = os.path.join('./private/models/lp/', 'checkpoint')
-        saver.save(session, checkpoint_file, global_step=epoch)
+        # checkpoint_file = os.path.join('./private/models/lp/', 'checkpoint')
+        # saver.save(session, checkpoint_file, global_step=epoch)
