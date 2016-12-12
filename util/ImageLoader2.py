@@ -3,17 +3,20 @@ from tensorflow.python.framework import ops
 from tensorflow.python.framework import dtypes
 from tensorflow.python.training import queue_runner
 import numpy as np
-from PIL import Image
 import matplotlib.pyplot as plt
+import os
 
-INPUT_PATH_TRAIN = './res/lp_tt.lst'
-INPUT_PATH_VAL = './res/lp_val.lst'
+os.chdir("..")
+# INPUT_PATH_TRAIN = './res/lp_tt.lst'
+# INPUT_PATH_VAL = './res/lp_val.lstlst'
+INPUT_PATH_TRAIN = './resources/list_all.txt'
+INPUT_PATH_VAL = './resources/list_all.txt'
 
 ####Learning Parameters
 learningRate = 0.001
 momentum = 0.9
 nEpochs = 120
-batchSize = 1  #
+batchSize = 1
 
 def processing_image(image):
   imgG = tf.image.rgb_to_grayscale(image, name=None)
@@ -26,7 +29,7 @@ def read_my_file_format(filename_queue):
   fName = filename_queue[0]
   label = filename_queue[1]
   file_contents = tf.read_file(fName)
-  img = tf.image.decode_png(file_contents, 3)
+  img = tf.image.decode_jpeg(file_contents, 3)
   return img, label
 
 def get_input(image_list_file):
@@ -82,7 +85,7 @@ with sess.as_default():
   sess.run(init_op)
   coord = tf.train.Coordinator()
   threads = tf.train.start_queue_runners(sess=sess, coord=coord)
-  for i in range(11):
+  for i in range(3):
     ex1, lab1 = sess.run([ex, lab])
     print lab1
   print lab1[1]
