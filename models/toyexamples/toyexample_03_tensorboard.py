@@ -17,7 +17,7 @@ def variable_summaries(var, prefix):
         tf.summary.histogram('histogram', var)
 
 
-os.chdir("..")
+os.chdir("../..")
 logdir = "private/logs/"
 mnist = input_data.read_data_sets("./resources/MNIST_data/", one_hot=True, reshape=False)
 K = 200

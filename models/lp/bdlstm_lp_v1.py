@@ -4,13 +4,19 @@ Author: Tobi and Gundram
 '''
 
 from __future__ import print_function
+
+import os
+import time
+from random import shuffle
+
+import numpy as np
 import tensorflow as tf
 from tensorflow.python.ops import ctc_ops as ctc
 from tensorflow.python.ops import rnn_cell
 from tensorflow.python.ops.rnn import bidirectional_rnn
 from util.LoaderUtil import read_image_list, get_list_vals
 from random import shuffle
-from util.STR2CTC import get_charmap_lp
+from util.CharacterMapper import get_cm_lp
 import os
 import time
 import numpy as np
@@ -18,9 +24,9 @@ import matplotlib.pyplot as plt
 
 INPUT_PATH_TRAIN = './private/lists/lp_only_train.lst'
 INPUT_PATH_VAL = './private/lists/lp_only_val.lst'
-cm, nClasses = get_charmap_lp()
+cm = get_cm_lp()
 # Additional NaC Channel
-nClasses += 1
+nClasses = cm.size() + 1
 
 nEpochs = 100
 batchSize = 16
