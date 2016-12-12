@@ -45,7 +45,7 @@ class CharacterMapper:
             characters = characters.decode('utf-8')
         for v in range(len(characters)):
             print(characters[v])
-            res.append(cm.get_channel(characters[v]))
+            res.append(self.get_channel(characters[v]))
         return res
 
     def get_value(self, channel):
