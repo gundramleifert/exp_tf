@@ -211,3 +211,29 @@ with tf.Session(graph=graph) as session:
         # Write a checkpoint.
         # checkpoint_file = os.path.join('./private/models/lp/', 'checkpoint')
         # saver.save(session, checkpoint_file, global_step=epoch)
+"""
+The training error should be approx:
+Epoch 1 ...
+Train: CTC-loss  48936.9245911
+Train: CER  0.96516257221
+Train time  1703.85518813
+Val: CTC-loss  4370.89046288
+Val: CER  0.964004362331
+Val time  55.4929909706
+
+Epoch 2 ...
+Train: CTC-loss  34355.9048417
+Train: CER  0.708854391441
+Train time  1748.89548993
+Val: CTC-loss  869.28685236
+Val: CER  0.218909796746
+Val time  55.9511339664
+
+Epoch 10 ...
+Train: CTC-loss  2487.37072541
+Train: CER  0.0976241652354
+Train time  1739.53503895
+Val: CTC-loss  288.446424073
+Val: CER  0.10403133113
+Val time  55.8573200703
+"""
