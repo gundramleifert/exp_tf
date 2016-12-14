@@ -32,6 +32,8 @@ GET STARTED WITH TENSORFLOW
 
 4. Try tutorial: https://www.tensorflow.org/versions/master/tutorials/mnist/tf/index.html
 
+5. API of TensorFlow including contributions: https://www.tensorflow.org/api_docs/python/
+
 Other Tutorials and examples:
 https://github.com/sherrym/tf-tutorial
 https://github.com/aymericdamien/TensorFlow-Examples.git
