@@ -1,6 +1,17 @@
 # exp_tf
 experimental - first tests with tensorflow
 
+INSTALL THE LATEST VERSION OF TENSORFLOW
+(see also https://www.tensorflow.org/versions/r0.12/get_started/os_setup.html#using-pip)
+
+1. Go into your tensorflow environment (source activate tensorflow)
+2. Type in:
+   export TF_BINARY_URL=https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-0.12.0rc0-cp27-none-linux_x86_64.whl
+   (For newer versions get the latest url)
+3. Execute the following command for Python 2:
+   pip install --ignore-installed --upgrade $TF_BINARY_URL
+
+
 This are links from Tobi that shows how to load data
 
  http://stackoverflow.com/questions/34340489/tensorflow-read-images-with-labels
@@ -21,6 +32,10 @@ GET STARTED WITH TENSORFLOW
 
 4. Try tutorial: https://www.tensorflow.org/versions/master/tutorials/mnist/tf/index.html
 
+Other Tutorials and examples:
+https://github.com/sherrym/tf-tutorial
+https://github.com/aymericdamien/TensorFlow-Examples.git
+
 ==> do not try to understand anything without reading these in advance :-)
 
 
@@ -33,3 +48,15 @@ maybe interesting for HPCs: https://www.tensorflow.org/versions/master/how_tos/d
 COMMON ERRORS:
 do not find tensorflow-sources/packages:
 File=>Settings...=> Project: exp_tf => set default project interpreter => tensorflow
+
+TensorBoard does not show the experiments
+bash: >source activate tensorflow
+
+mothods of scipy do not work ("AttributeError: 'module' object has no attribute'<method>'":
+source activate tensorflow
+conda install pillow
+
+out of Memory using GPUs:
+gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.333) sess = tf.Session(config=tf.ConfigProto(log_device_placement=True, gpu_options=gpu_options))
+or:
+export CUDA_VISIBLE_DEVICES=1
