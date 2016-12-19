@@ -51,6 +51,13 @@ class CharacterMapper:
     def get_value(self, channel):
         return self.dictBwd[channel]
 
+    def get_values(self, channels):
+        channels = np.reshape(channels,newshape=[-1])
+        res = []
+        for v in range(len(channels)):
+            res.append(self.get_value(channels[v]))
+        return res
+
     def size(self):
         return len(self.dictBwd)
 
