@@ -11,8 +11,8 @@ from tensorflow.python.ops import rnn_cell
 from tensorflow.python.ops import control_flow_ops
 from tensorflow.python.ops.rnn import bidirectional_rnn
 from util.LoaderUtil import read_image_list, get_list_vals
+from util.CharacterMapper import get_cm_lp
 from random import shuffle
-from util.STR2CTC import get_charmap_lp, get_charmap_lp_inv
 import os
 import time
 import numpy as np
@@ -21,9 +21,9 @@ import matplotlib.pyplot as plt
 # Goes done to 10%
 INPUT_PATH_TRAIN = './private/lists/lp_only_shifted_train.lst'
 INPUT_PATH_VAL = './private/lists/lp_only_val.lst'
-cm, nClasses = get_charmap_lp()
+cm = get_cm_lp()
 # Additional NaC Channel
-nClasses += 1
+nClasses = cm.size() + 1
 
 nEpochs = 15
 batchSize = 16
