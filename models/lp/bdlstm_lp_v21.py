@@ -12,6 +12,7 @@ from tensorflow.python.ops import control_flow_ops
 from tensorflow.python.ops.rnn import bidirectional_rnn
 from util.LoaderUtil import read_image_list, get_list_vals
 from util.CharacterMapper import get_cm_lp
+from util.saver import PrefixSaver
 from random import shuffle
 import os
 import time
@@ -146,6 +147,7 @@ with graph.as_default():
     trainIN = tf.placeholder_with_default(tf.constant(False), [])
     logits3d, seqAfterConv = inference(inputX, seqLengths, keep_prob, trainIN)
     loss = loss(logits3d, targetY, seqAfterConv)
+    saver = PrefixSaver('readPart', './private/models/lp23/')
     # optimizer = tf.train.MomentumOptimizer(learningRate, momentum).minimize(loss)
     optimizer = tf.train.AdamOptimizer().minimize(loss)
     # pred = tf.to_int32(ctc.ctc_beam_search_decoder(logits3d, seqAfterConv, merge_repeated=False)[0][0])
@@ -153,7 +155,6 @@ with graph.as_default():
     edist = tf.edit_distance(pred, targetY, normalize=False)
     tgtLens = tf.to_float(tf.size(targetY.values))
     err = tf.reduce_sum(edist) / tgtLens
-    saver = tf.train.Saver()
 
 with tf.Session(graph=graph) as session:
     # writer = tf.train.SummaryWriter('./log', session.graph)
@@ -239,8 +240,7 @@ with tf.Session(graph=graph) as session:
         print('Val: CER ', errVal)
         print('Val time ', time.time() - timeVS)
         # Write a checkpoint.
-        checkpoint_file = os.path.join('./private/models/lp21/', 'checkpoint')
-        saver.save(session, checkpoint_file, global_step=epoch)
+        saver.save(session, global_step=epoch)
 
 # Defining graph
 # Initializing
