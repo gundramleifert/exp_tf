@@ -18,8 +18,9 @@ import os
 import time
 import numpy as np
 import matplotlib.pyplot as plt
+import warnings
 
-# Goes done to 10%
+# Goes down to 10%
 INPUT_PATH_TRAIN = './private/data/iam/lists/iam_train.lst'
 INPUT_PATH_VAL = './private/data/iam/lists/iam_test.lst'
 cm = get_cm_iam()
@@ -40,9 +41,9 @@ nHiddenLSTM1 = 256
 os.chdir("../..")
 trainList = read_image_list(INPUT_PATH_TRAIN)
 numT = 1024  # number of training samples per epoch
-stepsPerEpocheTrain = numT / batchSize
+stepsPerEpochTrain = numT / batchSize
 valList = read_image_list(INPUT_PATH_VAL)
-stepsPerEpocheVal = len(valList) / batchSize
+stepsPerEpochVal = len(valList) / batchSize
 
 
 def inference(images, seqLen, keep_prob, phase_train):
@@ -176,7 +177,7 @@ with tf.Session(graph=graph) as session:
         lossT = 0
         errT = 0
         timeTS = time.time()
-        for bStep in range(stepsPerEpocheTrain):
+        for bStep in range(stepsPerEpochTrain):
             bList, workList = workList[:batchSize], workList[batchSize:]
             batchInputs, \
             batchSeqLengths, \
@@ -193,14 +194,14 @@ with tf.Session(graph=graph) as session:
             lossT += lossB
             errT += aErr
         print('Train: CTC-loss ', lossT)
-        cerT = errT / stepsPerEpocheTrain
+        cerT = errT / stepsPerEpochTrain
         print('Train: CER ', cerT)
         print('Train time ', time.time() - timeTS)
         workList = valList[:]
         errV = 0
         lossV = 0
         timeVS = time.time()
-        for bStep in range(stepsPerEpocheVal):
+        for bStep in range(stepsPerEpochVal):
             bList, workList = workList[:batchSize], workList[batchSize:]
             batchInputs, \
             batchSeqLengths, \
@@ -221,7 +222,7 @@ with tf.Session(graph=graph) as session:
             lossV += lossB
             errV += aErr
         print('Val: CTC-loss ', lossV)
-        errVal = errV / stepsPerEpocheVal
+        errVal = errV / stepsPerEpochVal
         print('Val: CER ', errVal)
         print('Val time ', time.time() - timeVS)
         # Write a checkpoint.
