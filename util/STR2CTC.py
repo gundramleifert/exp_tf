@@ -18,7 +18,10 @@ def target_string_list_to_ctc_tensor_repr(targetList, charMap):
         # encoded = tgt.decode('utf-8')
         aTgt = []
         for c in tgt:
-            aTgt.append(charMap.get_channel(c))
+            try:
+                aTgt.append(charMap.get_channel(c))
+            except KeyError as error:
+                print("KeyError: character {} not in charMap, skipping...".format(error))
         res.append(aTgt)
 
     #print res

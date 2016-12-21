@@ -1,7 +1,5 @@
-'''
+# Author: Tobi and Gundram
 
-Author: Tobi and Gundram
-'''
 
 from __future__ import print_function
 import tensorflow as tf
@@ -40,9 +38,9 @@ nHiddenLSTM1 = 256
 os.chdir("../..")
 trainList = read_image_list(INPUT_PATH_TRAIN)
 numT = 1024  # number of training samples per epoch
-stepsPerEpocheTrain = numT / batchSize
+stepsPerEpochTrain = numT / batchSize
 valList = read_image_list(INPUT_PATH_VAL)
-stepsPerEpocheVal = len(valList) / batchSize
+stepsPerEpochVal = len(valList) / batchSize
 
 
 def inference(images, seqLen, keep_prob, phase_train):
@@ -54,10 +52,10 @@ def inference(images, seqLen, keep_prob, phase_train):
     :param phase_train: tensor with dim=0 boolean
     :return: output of network and length of output sequences after convolution [batch][1][x/subsample][channels+1] and [batch]
     """
-    with tf.variable_scope('network') as scope:
+    with tf.variable_scope('network'):
         with tf.variable_scope('conv1') as scope:
             kernel = tf.Variable(tf.truncated_normal([6, 5, image_depth, 32], stddev=5e-2), name='weights')
-            ##Weight Decay?
+            # Weight Decay?
             # weight_decay = tf.mul(tf.nn.l2_loss(kernel), 0.002, name='weight_loss')
             # tf.add_to_collection('losses', weight_decay)
             conv = tf.nn.conv2d(images, kernel, [1, 4, 3, 1], padding='SAME')
@@ -70,7 +68,7 @@ def inference(images, seqLen, keep_prob, phase_train):
             seqL2 = tf.ceil(seqFloat * 0.3333)
         with tf.variable_scope('conv2') as scope:
             kernel = tf.Variable(tf.truncated_normal([5, 5, 32, 64], stddev=5e-2), name='weights')
-            ##Weight Decay?
+            # # Weight Decay?
             # weight_decay = tf.mul(tf.nn.l2_loss(kernel), 0.002, name='weight_loss')
             # tf.add_to_collection('losses', weight_decay)
             conv = tf.nn.conv2d(norm1, kernel, [1, 1, 1, 1], padding='SAME')
@@ -83,7 +81,7 @@ def inference(images, seqLen, keep_prob, phase_train):
             seqL3 = tf.ceil(seqL2 * 0.5)
         with tf.variable_scope('conv3') as scope:
             kernel = tf.Variable(tf.truncated_normal([5, 3, 64, 128], stddev=5e-2), name='weights')
-            ##Weight Decay?
+            # #Weight Decay?
             # weight_decay = tf.mul(tf.nn.l2_loss(kernel), 0.002, name='weight_loss')
             # tf.add_to_collection('losses', weight_decay)
             conv = tf.nn.conv2d(pool2, kernel, [1, 1, 1, 1], padding='SAME')
@@ -176,7 +174,7 @@ with tf.Session(graph=graph) as session:
         lossT = 0
         errT = 0
         timeTS = time.time()
-        for bStep in range(stepsPerEpocheTrain):
+        for bStep in range(stepsPerEpochTrain):
             bList, workList = workList[:batchSize], workList[batchSize:]
             batchInputs, \
             batchSeqLengths, \
@@ -193,14 +191,14 @@ with tf.Session(graph=graph) as session:
             lossT += lossB
             errT += aErr
         print('Train: CTC-loss ', lossT)
-        cerT = errT / stepsPerEpocheTrain
+        cerT = errT / stepsPerEpochTrain
         print('Train: CER ', cerT)
         print('Train time ', time.time() - timeTS)
         workList = valList[:]
         errV = 0
         lossV = 0
         timeVS = time.time()
-        for bStep in range(stepsPerEpocheVal):
+        for bStep in range(stepsPerEpochVal):
             bList, workList = workList[:batchSize], workList[batchSize:]
             batchInputs, \
             batchSeqLengths, \
@@ -221,7 +219,7 @@ with tf.Session(graph=graph) as session:
             lossV += lossB
             errV += aErr
         print('Val: CTC-loss ', lossV)
-        errVal = errV / stepsPerEpocheVal
+        errVal = errV / stepsPerEpochVal
         print('Val: CER ', errVal)
         print('Val time ', time.time() - timeVS)
         # Write a checkpoint.

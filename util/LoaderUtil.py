@@ -31,7 +31,7 @@ def get_batch_labels(bList, cm):
     for path in bList:
         labelFile = path[:] + ".txt"
         tmp = codecs.open(labelFile, 'r', encoding='utf-8')
-        u_str = tmp.readline();
+        u_str = tmp.readline()
         u_labels.append(u_str)
         # print(str)
         if tmp is not None:
