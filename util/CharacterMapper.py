@@ -29,6 +29,36 @@ def get_cm_lp():
     cm.add(u'.', idx)
     return cm
 
+def get_cm_iam():
+    cm = CharacterMapper()
+    # for x in range(10):
+    #     cm.add(str(x))
+    for Z in string.printable:
+        cm.add(Z)
+    # for Z in string.ascii_lowercase:
+    #     cm.add(Z)
+    # cm.add(u'Ä')
+    # cm.add(u'Ö')
+    # cm.add(u'Ü')
+    # idx = cm.add(u'-')
+    # cm.add(u'_', idx)
+    # cm.add(u' ', idx)
+    # cm.add(u' ')
+    # cm.add(u'.')
+    # cm.add(u',')
+    # cm.add(u'?')
+    # cm.add(u'!')
+    # cm.add(u'-')
+    # cm.add(u"'")
+    # cm.add(u'"')
+    # cm.add(u'(')
+    # cm.add(u')')
+    # cm.add(u':')
+    # cm.add(u';')
+    # cm.add(u'&')
+    # cm.add(u'/')
+    return cm
+
 
 class CharacterMapper:
     def __init__(self):
@@ -50,6 +80,13 @@ class CharacterMapper:
 
     def get_value(self, channel):
         return self.dictBwd[channel]
+
+    def get_values(self, channels):
+        channels = np.reshape(channels,newshape=[-1])
+        res = []
+        for v in range(len(channels)):
+            res.append(self.get_value(channels[v]))
+        return res
 
     def size(self):
         return len(self.dictBwd)
