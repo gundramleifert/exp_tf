@@ -12,7 +12,7 @@ INSTALL THE LATEST VERSION OF TENSORFLOW
    pip install --ignore-installed --upgrade $TF_BINARY_URL
 
 
-This are links from Tobi that shows how to load data
+HOW TO LOAD DATA
 
 http://stackoverflow.com/questions/34340489/tensorflow-read-images-with-labels
 
@@ -20,7 +20,8 @@ https://github.com/tensorflow/tensorflow/blob/master/tensorflow/models/image/cif
 
 http://stackoverflow.com/questions/34340489/tensorflow-read-images-with-labels ==> maybe best
 
-https://www.tensorflow.org/versions/r0.12/how_tos/reading_data/index.htm ==> from Max the suggestion
+https://www.tensorflow.org/versions/r0.12/how_tos/reading_data/index.html ==> suggestion from Max
+
 
 GET STARTED WITH TENSORFLOW
 

@@ -9,6 +9,7 @@ from tensorflow.python.ops import rnn_cell
 from tensorflow.python.ops import control_flow_ops
 from tensorflow.python.ops.rnn import bidirectional_rnn
 from util.LoaderUtil import read_image_list, get_list_vals
+import util.LoaderUtil2
 from util.CharacterMapper import get_cm_iam
 from util.saver import PrefixSaver
 from random import shuffle
