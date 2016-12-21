@@ -4,37 +4,42 @@ Author: Tobi and Gundram
 '''
 
 from __future__ import print_function
+
+import os
+import time
+from random import shuffle
+
+import numpy as np
 import tensorflow as tf
 from tensorflow.python.ops import ctc_ops as ctc
 from tensorflow.python.ops import rnn_cell
 from tensorflow.python.ops.rnn import bidirectional_rnn
 from util.LoaderUtil import read_image_list, get_list_vals
 from random import shuffle
-from util.STR2CTC import get_charmap_lp
+from util.CharacterMapper import get_cm_lp
 import os
 import time
 import numpy as np
 import matplotlib.pyplot as plt
 
-INPUT_PATH_TRAIN = './resources/lp_only_train.lst'
-INPUT_PATH_VAL = './resources/lp_only_val.lst'
-cm, nClasses = get_charmap_lp()
+# Goes done to 10%
+INPUT_PATH_TRAIN = './private/lists/lp_only_train.lst'
+INPUT_PATH_VAL = './private/lists/lp_only_val.lst'
+cm = get_cm_lp()
 # Additional NaC Channel
-nClasses += 1
+nClasses = cm.size() + 1
 
 nEpochs = 100
-batchSize = 16
+batchSize = 1
 learningRate = 0.001
 momentum = 0.9
 # It is assumed that the TextLines are ALL saved with a consistent height of imgH
-imgH = 20
+imgH = 48
 # Depending on the size the image is cropped or zero padded
-imgW = 100
+imgW = 256
 channels = 1
-nHiddenLSTM1 = 64
-nHiddenLSTM2 = 64
-nHiddenInner = 128
-dropout = 0.5
+nHiddenLSTM1 = 128
+
 
 os.chdir("../..")
 trainList = read_image_list(INPUT_PATH_TRAIN)
@@ -45,50 +50,49 @@ stepsPerEpocheVal = len(valList) / batchSize
 
 def inference(images, seqLen):
     with tf.variable_scope('conv1') as scope:
-        kernel = tf.Variable(tf.truncated_normal([5, 5, channels, 16], stddev=5e-2), name='weights')
+        kernel = tf.Variable(tf.truncated_normal([4, 3, channels, 42], stddev=5e-2), name='weights')
         ##Weight Decay?
         # weight_decay = tf.mul(tf.nn.l2_loss(kernel), 0.002, name='weight_loss')
         # tf.add_to_collection('losses', weight_decay)
-        conv = tf.nn.conv2d(images, kernel, [1, 1, 1, 1], padding='SAME')
-        biases = tf.Variable(tf.constant(0.1, shape=[16]), name='biases')
+        conv = tf.nn.conv2d(images, kernel, [1, 4, 3, 1], padding='SAME')
+        biases = tf.Variable(tf.constant(0.1, shape=[42]), name='biases')
         pre_activation = tf.nn.bias_add(conv, biases)
         conv1 = tf.nn.relu(pre_activation, name=scope.name)
         # _activation_summary(conv1)
-        pool1 = tf.nn.max_pool(conv1, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1],
-                               padding='SAME', name='pool1')
+        #pool1 = tf.nn.max_pool(conv1, ksize=[1, 4, 3, 1], strides=[1, 4, 3, 1],
+        #                       padding='SAME', name='pool1')
         # norm1 = tf.nn.local_response_normalization(pool1, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75,name='norm1')
         seqFloat = tf.to_float(seqLen)
-        seqL2 = tf.ceil(seqFloat * 0.5)
+        seqL2 = tf.ceil(seqFloat * 0.33)
     with tf.variable_scope('conv2') as scope:
-        kernel = tf.Variable(tf.truncated_normal([5, 5, 16, 64], stddev=5e-2), name='weights')
+        kernel = tf.Variable(tf.truncated_normal([5, 5, 42, 64], stddev=5e-2), name='weights')
         ##Weight Decay?
         # weight_decay = tf.mul(tf.nn.l2_loss(kernel), 0.002, name='weight_loss')
         # tf.add_to_collection('losses', weight_decay)
-        conv = tf.nn.conv2d(pool1, kernel, [1, 1, 1, 1], padding='SAME')
+        conv = tf.nn.conv2d(conv1, kernel, [1, 1, 1, 1], padding='SAME')
         biases = tf.Variable(tf.constant(0.1, shape=[64]), name='biases')
         pre_activation = tf.nn.bias_add(conv, biases)
         conv2 = tf.nn.relu(pre_activation, name=scope.name)
         # _activation_summary(conv2)
         # norm2
         # norm2 = tf.nn.local_response_normalization(conv2, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75,name='norm2')
-        pool2 = tf.nn.max_pool(conv2, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1], padding='SAME', name='pool2')
+        pool2 = tf.nn.max_pool(conv2, ksize=[1, 4, 2, 1], strides=[1, 4, 2, 1], padding='SAME', name='pool2')
         seqL3 = tf.ceil(seqL2 * 0.5)
     with tf.variable_scope('conv3') as scope:
-        kernel = tf.Variable(tf.truncated_normal([5, 5, 64, 128], stddev=5e-2), name='weights')
+        kernel = tf.Variable(tf.truncated_normal([3, 3, 64, 256], stddev=5e-2), name='weights')
         ##Weight Decay?
         # weight_decay = tf.mul(tf.nn.l2_loss(kernel), 0.002, name='weight_loss')
         # tf.add_to_collection('losses', weight_decay)
         conv = tf.nn.conv2d(pool2, kernel, [1, 1, 1, 1], padding='SAME')
-        biases = tf.Variable(tf.constant(0.1, shape=[128]), name='biases')
+        biases = tf.Variable(tf.constant(0.1, shape=[256]), name='biases')
         pre_activation = tf.nn.bias_add(conv, biases)
         conv3 = tf.nn.relu(pre_activation, name=scope.name)
-        # _activation_summary(conv2)
-        # norm2 = tf.nn.local_response_normalization(conv2, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75,name='norm2')
+        pool3 = tf.nn.max_pool(conv3, ksize=[1, 3, 1, 1], strides=[1, 3, 1, 1], padding='SAME', name='pool2')
         # NO POOLING HERE -> CTC needs an appropriate length.
         seqLenAfterConv = tf.to_int32(seqL3)
     with tf.variable_scope('RNN_Prep') as scope:
         # (#batch Y X Z) --> (X #batch Y Z)
-        rnnIn = tf.transpose(conv3, [2, 0, 1, 3])
+        rnnIn = tf.transpose(pool3, [2, 0, 1, 3])
         # (X #batch Y Z) --> (X #batch Y*Z)
         shape = rnnIn.get_shape()
         steps = shape[0]
@@ -109,30 +113,18 @@ def inference(images, seqLen):
         fbH1rs = [tf.reshape(t, [batchSize, 2, nHiddenLSTM1]) for t in outputs]
         # outH1 = [tf.reduce_sum(tf.mul(t, weightsOutH1), reduction_indices=1) + biasesOutH1 for t in fbH1rs]
         outH1 = [tf.reduce_sum(t, reduction_indices=1) for t in fbH1rs]
-    with tf.variable_scope('BLSTM2') as scope:
-        # Some kind of attention model -> switched it off for first tests
-        # weightsOutH2 = tf.Variable(tf.truncated_normal([2, nHiddenLSTM2],
-        #                                                 stddev=np.sqrt(2.0 / (2 * nHiddenLSTM2))))
-        # biasesOutH2 = tf.Variable(tf.zeros([nHiddenLSTM2]))
-        forwardH2 = rnn_cell.LSTMCell(nHiddenLSTM2, use_peepholes=True, state_is_tuple=True)
-        backwardH2 = rnn_cell.LSTMCell(nHiddenLSTM2, use_peepholes=True, state_is_tuple=True)
-        outputs2, _, _ = bidirectional_rnn(forwardH2, backwardH2, outH1, dtype=tf.float32)
-
-        fbH1rs2 = [tf.reshape(t, [batchSize, 2, nHiddenLSTM2]) for t in outputs2]
-        # outH2 = [tf.reduce_sum(tf.mul(t, weightsOutH2), reduction_indices=1) + biasesOutH2 for t in fbH1rs2]
-        outH2 = [tf.reduce_sum(t, reduction_indices=1) for t in fbH1rs2]
     with tf.variable_scope('LOGIT') as scope:
-        weightsHid = tf.Variable(tf.truncated_normal([nHiddenLSTM2, nHiddenInner],
-                                                     stddev=np.sqrt(2.0 / nHiddenLSTM2)))
-        biasesHid = tf.Variable(tf.zeros([nHiddenInner]))
-        logits = [tf.matmul(t, weightsHid) + biasesHid for t in outH2]
-        acti = [tf.nn.relu(t) for t in logits]
-        dropped = [tf.nn.dropout(t, dropout) for t in acti]
+        #weightsHid = tf.Variable(tf.truncated_normal([nHiddenLSTM1, nHiddenInner],
+        #                                             stddev=np.sqrt(2.0 / nHiddenLSTM1)))
+        #biasesHid = tf.Variable(tf.zeros([nHiddenInner]))
+        #logits = [tf.matmul(t, weightsHid) + biasesHid for t in outH1]
+        #acti = [tf.nn.relu(t) for t in logits]
+        #dropped = [tf.nn.dropout(t, dropout) for t in acti]
 
-        weightsClasses = tf.Variable(tf.truncated_normal([nHiddenInner, nClasses],
-                                                         stddev=np.sqrt(2.0 / nHiddenInner)))
+        weightsClasses = tf.Variable(tf.truncated_normal([nHiddenLSTM1, nClasses],
+                                                         stddev=np.sqrt(2.0 / nHiddenLSTM1)))
         biasesClasses = tf.Variable(tf.zeros([nClasses]))
-        logitsFin = [tf.matmul(t, weightsClasses) + biasesClasses for t in dropped]
+        logitsFin = [tf.matmul(t, weightsClasses) + biasesClasses for t in outH1]
 
         logits3d = tf.pack(logitsFin)
     return logits3d, seqLenAfterConv
@@ -156,7 +148,8 @@ with graph.as_default():
     logits3d, seqAfterConv = inference(inputX, seqLengths)
     loss = loss(logits3d, targetY, seqAfterConv)
     optimizer = tf.train.MomentumOptimizer(learningRate, momentum).minimize(loss)
-    pred = tf.to_int32(ctc.ctc_beam_search_decoder(logits3d, seqAfterConv)[0][0])
+    pred = tf.to_int32(ctc.ctc_beam_search_decoder(logits3d, seqAfterConv, merge_repeated=False)[0][0])
+    # pred = tf.to_int32(ctc.ctc_greedy_decoder(logits3d, seqAfterConv)[0][0])
     edist = tf.edit_distance(pred, targetY, normalize=False)
     tgtLens = tf.to_float(tf.size(targetY.values))
     err = tf.reduce_sum(edist) / tgtLens
@@ -170,51 +163,109 @@ with tf.Session(graph=graph) as session:
     # writer = tf.train.SummaryWriter('./log', session.graph)
     print('Initializing')
     tf.global_variables_initializer().run()
-    for epoch in range(nEpochs):
-        workList = trainList[:]
-        shuffle(workList)
-        print('Epoch', epoch + 1, '...')
-        lossT = 0
-        errT = 0
-        timeTS = time.time()
-        for bStep in range(stepsPerEpocheTrain):
-            bList, workList = workList[:batchSize], workList[batchSize:]
-            batchInputs, batchSeqLengths, batchTargetIdxs, batchTargetVals, batchTargetShape = get_list_vals(bList, cm,
-                                                                                                             imgW,
-                                                                                                             mvn=True)
-            feedDict = {inputX: batchInputs, targetIxs: batchTargetIdxs, targetVals: batchTargetVals,
-                        targetShape: batchTargetShape, seqLengths: batchSeqLengths}
-            _, lossB, aErr = session.run([optimizer, loss, err], feed_dict=feedDict)
-            # _, lossB, aErr, sET, sLT = session.run([optimizer, loss, err, err_train, loss_train], feed_dict=feedDict)
-            lossT += lossB
-            # writer.add_summary(sET, epoch * stepsPerEpocheTrain + bStep)
-            # writer.add_summary(sLT, epoch * stepsPerEpocheTrain + bStep)
-            errT += aErr
-        print('Train: CTC-loss ', lossT)
-        cerT = errT / stepsPerEpocheTrain
-        print('Train: CER ', cerT)
-        print('Train time ', time.time() - timeTS)
-        workList = valList[:]
-        errV = 0
-        lossV = 0
-        timeVS = time.time()
-        for bStep in range(stepsPerEpocheVal):
-            bList, workList = workList[:batchSize], workList[batchSize:]
-            batchInputs, batchSeqLengths, batchTargetIdxs, batchTargetVals, batchTargetShape = get_list_vals(bList, cm,
-                                                                                                             imgW,
-                                                                                                             mvn=True)
-            feedDict = {inputX: batchInputs, targetIxs: batchTargetIdxs, targetVals: batchTargetVals,
-                        targetShape: batchTargetShape, seqLengths: batchSeqLengths}
-            lossB, aErr = session.run([loss, err], feed_dict=feedDict)
-            # lossB, aErr, sE, sL = session.run([loss, err, err_val, loss_val], feed_dict=feedDict)
-            # writer.add_summary(sE, epoch*stepsPerEpocheVal + bStep)
-            # writer.add_summary(sL, epoch * stepsPerEpocheVal + bStep)
-            lossV += lossB
-            errV += aErr
-        print('Val: CTC-loss ', lossV)
-        errVal = errV / stepsPerEpocheVal
-        print('Val: CER ', errVal)
-        print('Val time ', time.time() - timeVS)
-        # Write a checkpoint.
-        checkpoint_file = os.path.join('./private/models/lp/', 'checkpoint')
-        saver.save(session, checkpoint_file, global_step=epoch)
+
+    ckpt = tf.train.get_checkpoint_state("./private/models/lp/")
+    if ckpt and ckpt.model_checkpoint_path:
+        saver.restore(session, ckpt.model_checkpoint_path)
+    print(ckpt)
+    workList = valList[:]
+    errV = 0
+    lossV = 0
+    timeVS = time.time()
+    for bStep in range(stepsPerEpocheVal):
+        bList, workList = workList[:batchSize], workList[batchSize:]
+        batchInputs, batchSeqLengths, batchTargetIdxs, batchTargetVals, batchTargetShape = get_list_vals(bList, cm,
+                                                                                                           imgW,
+                                                                                                         mvn=True)
+        feedDict = {inputX: batchInputs, targetIxs: batchTargetIdxs, targetVals: batchTargetVals,
+                    targetShape: batchTargetShape, seqLengths: batchSeqLengths}
+        lossB, aErr, p = session.run([loss, err, pred], feed_dict=feedDict)
+
+        # print(aErr)
+        # print(p)
+        # plt.imshow(batchInputs[0,:,:,0], cmap=plt.cm.gray)
+        # plt.show()
+
+        # lossB, aErr, sE, sL = session.run([loss, err, err_val, loss_val], feed_dict=feedDict)
+        # writer.add_summary(sE, epoch*stepsPerEpocheVal + bStep)
+        # writer.add_summary(sL, epoch * stepsPerEpocheVal + bStep)
+        lossV += lossB
+        errV += aErr
+    print('Val: CTC-loss ', lossV)
+    errVal = errV / stepsPerEpocheVal
+    print('Val: CER ', errVal)
+    print('Val time ', time.time() - timeVS)
+    # for epoch in range(nEpochs):
+    #     workList = trainList[:]
+    #     shuffle(workList)
+    #     print('Epoch', epoch + 1, '...')
+    #     lossT = 0
+    #     errT = 0
+    #     timeTS = time.time()
+    #     for bStep in range(stepsPerEpocheTrain):
+    #         bList, workList = workList[:batchSize], workList[batchSize:]
+    #         batchInputs, batchSeqLengths, batchTargetIdxs, batchTargetVals, batchTargetShape = get_list_vals(bList, cm,
+    #                                                                                                          imgW,
+    #                                                                                                          mvn=True)
+    #         feedDict = {inputX: batchInputs, targetIxs: batchTargetIdxs, targetVals: batchTargetVals,
+    #                     targetShape: batchTargetShape, seqLengths: batchSeqLengths}
+    #         _, lossB, aErr = session.run([optimizer, loss, err], feed_dict=feedDict)
+    #         # _, lossB, aErr, sET, sLT = session.run([optimizer, loss, err, err_train, loss_train], feed_dict=feedDict)
+    #         lossT += lossB
+    #         # writer.add_summary(sET, epoch * stepsPerEpocheTrain + bStep)
+    #         # writer.add_summary(sLT, epoch * stepsPerEpocheTrain + bStep)
+    #         errT += aErr
+    #     print('Train: CTC-loss ', lossT)
+    #     cerT = errT / stepsPerEpocheTrain
+    #     print('Train: CER ', cerT)
+    #     print('Train time ', time.time() - timeTS)
+    #     workList = valList[:]
+    #     errV = 0
+    #     lossV = 0
+    #     timeVS = time.time()
+    #     for bStep in range(stepsPerEpocheVal):
+    #         bList, workList = workList[:batchSize], workList[batchSize:]
+    #         batchInputs, batchSeqLengths, batchTargetIdxs, batchTargetVals, batchTargetShape = get_list_vals(bList, cm,
+    #                                                                                                          imgW,
+    #                                                                                                          mvn=True)
+    #         feedDict = {inputX: batchInputs, targetIxs: batchTargetIdxs, targetVals: batchTargetVals,
+    #                     targetShape: batchTargetShape, seqLengths: batchSeqLengths}
+    #         lossB, aErr = session.run([loss, err], feed_dict=feedDict)
+    #         # lossB, aErr, sE, sL = session.run([loss, err, err_val, loss_val], feed_dict=feedDict)
+    #         # writer.add_summary(sE, epoch*stepsPerEpocheVal + bStep)
+    #         # writer.add_summary(sL, epoch * stepsPerEpocheVal + bStep)
+    #         lossV += lossB
+    #         errV += aErr
+    #     print('Val: CTC-loss ', lossV)
+    #     errVal = errV / stepsPerEpocheVal
+    #     print('Val: CER ', errVal)
+    #     print('Val time ', time.time() - timeVS)
+    #     # Write a checkpoint.
+    #     checkpoint_file = os.path.join('./private/models/lp/', 'checkpoint')
+    #     saver.save(session, checkpoint_file, global_step=epoch)
+"""
+The training error should be approx:
+Epoch 1 ...
+Train: CTC-loss  48936.9245911
+Train: CER  0.96516257221
+Train time  1703.85518813
+Val: CTC-loss  4370.89046288
+Val: CER  0.964004362331
+Val time  55.4929909706
+
+Epoch 2 ...
+Train: CTC-loss  34355.9048417
+Train: CER  0.708854391441
+Train time  1748.89548993
+Val: CTC-loss  869.28685236
+Val: CER  0.218909796746
+Val time  55.9511339664
+
+Epoch 10 ...
+Train: CTC-loss  2487.37072541
+Train: CER  0.0976241652354
+Train time  1739.53503895
+Val: CTC-loss  288.446424073
+Val: CER  0.10403133113
+Val time  55.8573200703
+"""

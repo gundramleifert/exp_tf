@@ -1,8 +1,0 @@
-./resources/CO_5_400_0173_line_1455675830115_161.jpg
-./resources/CO_5_401_0187_line_1455699735874_235.jpg
-./resources/CO_5_400_0173_line_1455676658680_200.jpg
-./resources/CO_5_402_0216_line_1455770060206_183.jpg
-./resources/CO_5_402_0216_line_1455770342983_212.jpg
-./resources/CO_5_403_0122_line_1455785370962_833.jpg
-./resources/CO_5_404_0227_line_1455846376042_89.jpg
-./resources/CO_5_401_0187_line_1455699556054_204.jpg
