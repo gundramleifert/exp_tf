@@ -26,7 +26,7 @@ cm = get_cm_iam()
 # Additional NaC Channel
 nClasses = cm.size() + 1
 
-nEpochs = 15
+nEpochs = 150
 batchSize = 16
 # learningRate = 0.001
 # momentum = 0.9
@@ -39,7 +39,7 @@ nHiddenLSTM1 = 256
 
 os.chdir("../..")
 trainList = read_image_list(INPUT_PATH_TRAIN)
-numT = 1024  # number of training samples per epoch
+numT = 6160  # number of training samples per epoch
 stepsPerEpocheTrain = numT / batchSize
 valList = read_image_list(INPUT_PATH_VAL)
 stepsPerEpocheVal = len(valList) / batchSize
@@ -168,6 +168,8 @@ with tf.Session(graph=graph) as session:
     # writer = tf.train.SummaryWriter('./log', session.graph)
     print('Initializing')
     tf.global_variables_initializer().run()
+    saver.restore(session)
+
     for epoch in range(nEpochs):
         workList = trainList[:]
         shuffle(workList)
