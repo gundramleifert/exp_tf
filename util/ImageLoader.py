@@ -8,7 +8,7 @@ import numpy as np
 import os
 
 num_epochs = 3
-filename = "./resources/list_all.txt"
+filename = "./private/lists/co.lst"
 
 
 class ImageLoader:

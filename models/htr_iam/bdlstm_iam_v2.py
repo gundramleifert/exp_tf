@@ -9,6 +9,7 @@ from tensorflow.python.ops import rnn_cell
 from tensorflow.python.ops import control_flow_ops
 from tensorflow.python.ops.rnn import bidirectional_rnn
 from util.LoaderUtil import read_image_list, get_list_vals
+import util.LoaderUtil2
 from util.CharacterMapper import get_cm_iam
 from util.saver import PrefixSaver
 from random import shuffle
@@ -25,7 +26,7 @@ cm = get_cm_iam()
 # Additional NaC Channel
 nClasses = cm.size() + 1
 
-nEpochs = 150
+nEpochs = 15
 batchSize = 16
 # learningRate = 0.001
 # momentum = 0.9
@@ -181,11 +182,12 @@ with tf.Session(graph=graph) as session:
             batchSeqLengths, \
             batchTargetIdxs, \
             batchTargetVals, \
-            batchTargetShape = get_list_vals(
+            batchTargetShape = util.LoaderUtil2.get_list_vals(
                 bList,
                 cm,
                 imgW,
-                mvn=False)
+                mvn=False,
+                strict=False)
             feedDict = {inputX: batchInputs, targetIxs: batchTargetIdxs, targetVals: batchTargetVals,
                         targetShape: batchTargetShape, seqLengths: batchSeqLengths, keep_prob: 0.5, trainIN: True}
             _, lossB, aErr = session.run([optimizer, loss, err], feed_dict=feedDict)
@@ -205,12 +207,12 @@ with tf.Session(graph=graph) as session:
             batchSeqLengths, \
             batchTargetIdxs, \
             batchTargetVals, \
-            batchTargetShape = get_list_vals(
+            batchTargetShape = util.LoaderUtil2.get_list_vals(
                 bList,
                 cm,
                 imgW,
-                mvn=False
-            )
+                mvn=False,
+                strict=False)
             feedDict = {inputX: batchInputs, targetIxs: batchTargetIdxs, targetVals: batchTargetVals,
                         targetShape: batchTargetShape, seqLengths: batchSeqLengths, keep_prob: 1.0, trainIN: False}
             lossB, aErr = session.run([loss, err], feed_dict=feedDict)
