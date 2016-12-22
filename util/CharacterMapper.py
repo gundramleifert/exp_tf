@@ -40,8 +40,11 @@ def get_cm_iam():
     for z in string.ascii_uppercase:
         cm.add(z)
     # cm.add(u'Ä')
+    # cm.add(u'ä')
     # cm.add(u'Ö')
+    # cm.add(u'ö')
     # cm.add(u'Ü')
+    # cm.add(u'ü')
     # idx = cm.add(u'-')
     # cm.add(u'_', idx)
     # cm.add(u' ', idx)
@@ -59,6 +62,7 @@ def get_cm_iam():
     cm.add(u';')
     cm.add(u'&')
     cm.add(u'/')
+    # cm.add(u'#')
     return cm
 
 

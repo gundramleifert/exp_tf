@@ -2,7 +2,9 @@ from __future__ import print_function
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import misc
+from itertools import compress
 import STR2CTC
+import CharacterMapper
 import os
 import codecs
 
@@ -26,7 +28,7 @@ def read_image_list(pathToList):
     return filenames
 
 
-def get_batch_labels(bList, cm):
+def get_batch_labels(bList, cm, strict):
     u_labels = []
     for path in bList:
         labelFile = path[:] + ".txt"
@@ -36,11 +38,11 @@ def get_batch_labels(bList, cm):
         # print(str)
         if tmp is not None:
             tmp.close()
-    idx, val, shape = STR2CTC.target_string_list_to_ctc_tensor_repr(u_labels, cm)
-    return idx, val, shape
+    idx, val, shape, skipList = STR2CTC.target_string_list_to_ctc_tensor_repr(u_labels, cm, strict)
+    return idx, val, shape, skipList
 
 
-def get_batch_imgs(bList, imgW, mvn):
+def get_batch_imgs(bList, imgW, mvn, skipList):
     imgs = []
     seqL = []
 
@@ -69,26 +71,32 @@ def get_batch_imgs(bList, imgW, mvn):
         # plt.imshow(aImg, cmap=plt.cm.gray)
         # plt.show()
         imgs.append(aImg)
-        bSize = len(bList)
+        if skipList:
+            skipImgs = list(compress(imgs, [not skip for skip in skipList]))
+        bSize = len(imgs)
         imgBatched = np.zeros((bSize, hei, imgW, 1), dtype='float32')
         # batch the image list
-        for idx, img in enumerate(imgs):
-            imgBatched[idx, :, :, 0] = img
+        if skipList:
+            for idx, img in enumerate(skipImgs):
+                imgBatched[idx, :, :, 0] = img
+        else:
+            for idx, img in enumerate(imgs):
+                imgBatched[idx, :, :, 0] = img
     return imgBatched, seqL
 
 
-def get_list_vals(bList, cm, imgW, mvn=False):
-    tgtIdx, tgtVal, tgtShape = get_batch_labels(bList, cm)
-    inpBatch, inpSeqL = get_batch_imgs(bList, imgW, mvn)
+def get_list_vals(bList, cm, imgW, mvn=False, strict=True):
+    tgtIdx, tgtVal, tgtShape, skipList = get_batch_labels(bList, cm, strict)
+    inpBatch, inpSeqL = get_batch_imgs(bList, imgW, mvn, skipList)
     return inpBatch, inpSeqL, tgtIdx, tgtVal, tgtShape
 
 
 if __name__ == '__main__':
     os.chdir("..")
-    list = read_image_list('./resources/lp_only_train.lst')
-    imgBatches, seqL = get_list_vals(list, STR2CTC.get_charmap_lp(), 100)
+    myList = read_image_list('./resources/lp_only_train.lst')
+    imgBatches, seqL, _, _, _ = get_list_vals(myList, CharacterMapper.get_cm_lp(), 100)
     # print(seqL)
     print(imgBatches.shape)
     print(imgBatches.dtype)
-    plt.imshow(imgBatches[129], cmap=plt.cm.gray)
+    plt.imshow(imgBatches[129], cmap=plt.get_cmap('gray'))
     plt.show()
