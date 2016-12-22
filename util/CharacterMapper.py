@@ -29,6 +29,42 @@ def get_cm_lp():
     cm.add(u'.', idx)
     return cm
 
+def get_cm_iam():
+    cm = CharacterMapper()
+    # for Z in string.printable:
+    #     cm.add(Z)
+    for x in range(10):
+        cm.add(str(x))
+    for Z in string.ascii_lowercase:
+        cm.add(Z)
+    for z in string.ascii_uppercase:
+        cm.add(z)
+    # cm.add(u'Ä')
+    # cm.add(u'ä')
+    # cm.add(u'Ö')
+    # cm.add(u'ö')
+    # cm.add(u'Ü')
+    # cm.add(u'ü')
+    # idx = cm.add(u'-')
+    # cm.add(u'_', idx)
+    # cm.add(u' ', idx)
+    cm.add(u' ')
+    cm.add(u'.')
+    cm.add(u',')
+    cm.add(u'?')
+    cm.add(u'!')
+    cm.add(u'-')
+    cm.add(u"'")
+    cm.add(u'"')
+    cm.add(u'(')
+    cm.add(u')')
+    cm.add(u':')
+    cm.add(u';')
+    cm.add(u'&')
+    cm.add(u'/')
+    # cm.add(u'#')
+    return cm
+
 
 class CharacterMapper:
     def __init__(self):

@@ -12,15 +12,16 @@ INSTALL THE LATEST VERSION OF TENSORFLOW
    pip install --ignore-installed --upgrade $TF_BINARY_URL
 
 
-This are links from Tobi that shows how to load data
+HOW TO LOAD DATA
 
- http://stackoverflow.com/questions/34340489/tensorflow-read-images-with-labels
+http://stackoverflow.com/questions/34340489/tensorflow-read-images-with-labels
 
 https://github.com/tensorflow/tensorflow/blob/master/tensorflow/models/image/cifar10/cifar10_input.py
 
 http://stackoverflow.com/questions/34340489/tensorflow-read-images-with-labels ==> maybe best
 
-https://www.tensorflow.org/versions/r0.12/how_tos/reading_data/index.htm ==> from Max the suggestion
+https://www.tensorflow.org/versions/r0.12/how_tos/reading_data/index.html ==> suggestion from Max
+
 
 GET STARTED WITH TENSORFLOW
 
@@ -37,6 +38,8 @@ GET STARTED WITH TENSORFLOW
 Other Tutorials and examples:
 https://github.com/sherrym/tf-tutorial
 https://github.com/aymericdamien/TensorFlow-Examples.git
+Saving images in Tensorboard:
+http://stackoverflow.com/questions/38543850/tensorflow-how-to-display-custom-images-in-tensorboard-e-g-matplotlib-plots
 
 ==> do not try to understand anything without reading these in advance :-)
 
