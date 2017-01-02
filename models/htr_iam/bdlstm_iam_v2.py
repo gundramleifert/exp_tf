@@ -8,8 +8,8 @@ from tensorflow.contrib.layers import batch_norm
 from tensorflow.python.ops import rnn_cell
 from tensorflow.python.ops import control_flow_ops
 from tensorflow.python.ops.rnn import bidirectional_rnn
-from util.LoaderUtil import read_image_list, get_list_vals
-import util.LoaderUtil2
+# from util.LoaderUtil import read_image_list, get_list_vals
+from util.LoaderUtil2 import read_image_list, get_list_vals
 from util.CharacterMapper import get_cm_iam
 from util.saver import PrefixSaver
 from random import shuffle
@@ -33,7 +33,7 @@ batchSize = 16
 # It is assumed that the TextLines are ALL saved with a consistent height of imgH
 imgH = 32  # 64
 # Depending on the size the image is cropped or zero padded
-imgW = 2048  # 4096
+imgW = 1024  # 4096
 image_depth = 1
 nHiddenLSTM1 = 256
 
@@ -182,7 +182,7 @@ with tf.Session(graph=graph) as session:
             batchSeqLengths, \
             batchTargetIdxs, \
             batchTargetVals, \
-            batchTargetShape = util.LoaderUtil2.get_list_vals(
+            batchTargetShape = get_list_vals(
                 bList,
                 cm,
                 imgW,
@@ -207,7 +207,7 @@ with tf.Session(graph=graph) as session:
             batchSeqLengths, \
             batchTargetIdxs, \
             batchTargetVals, \
-            batchTargetShape = util.LoaderUtil2.get_list_vals(
+            batchTargetShape = get_list_vals(
                 bList,
                 cm,
                 imgW,

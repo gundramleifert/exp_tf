@@ -65,7 +65,6 @@ variable_summaries(Y2, "Y_2")
 variable_summaries(Y3, "Y_3")
 variable_summaries(Y4, "Y_4")
 variable_summaries(Y, "Y_out")
-summary2 = tf.summary.tensor_summary("OUTPUT", Y)
 
 # loss function
 cross_entropy = tf.nn.softmax_cross_entropy_with_logits(Ylogits, Y_)
