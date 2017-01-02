@@ -48,7 +48,10 @@ learning_rate = 0.003
 optimizer = tf.train.AdamOptimizer(learning_rate)
 train_step = optimizer.minimize(cross_entropy)
 init = tf.global_variables_initializer()
-sess = tf.Session()
+# creates a local server
+server = tf.train.Server.create_local_server()
+# creates a session on the server
+sess = tf.Session(server.target)
 sess.run(init)
 
 for i in range(1001):
