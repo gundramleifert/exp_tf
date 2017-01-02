@@ -25,7 +25,7 @@ cm = get_cm_iam()
 # Additional NaC Channel
 nClasses = cm.size() + 1
 
-nEpochs = 15
+nEpochs = 150
 batchSize = 16
 # learningRate = 0.001
 # momentum = 0.9
