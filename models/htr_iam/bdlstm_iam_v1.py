@@ -37,11 +37,16 @@ image_depth = 1
 nHiddenLSTM1 = 256
 
 os.chdir("../..")
+
 trainList = read_image_list(INPUT_PATH_TRAIN)
+print("Cleaning up train data:")
 trainList = clean_list(trainList, imgW, cm)
+valList = read_image_list(INPUT_PATH_VAL)
+print("Cleaning up validation data:")
+valList = clean_list(valList, imgW, cm)
+
 numT = 1024  # number of training samples per epoch
 stepsPerEpochTrain = numT / batchSize
-valList = read_image_list(INPUT_PATH_VAL)
 stepsPerEpochVal = len(valList) / batchSize
 
 
