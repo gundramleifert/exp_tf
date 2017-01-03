@@ -38,6 +38,7 @@ GET STARTED WITH TENSORFLOW
 Other Tutorials and examples:
 https://github.com/sherrym/tf-tutorial
 https://github.com/aymericdamien/TensorFlow-Examples.git
+
 Saving images in Tensorboard:
 http://stackoverflow.com/questions/38543850/tensorflow-how-to-display-custom-images-in-tensorboard-e-g-matplotlib-plots
 

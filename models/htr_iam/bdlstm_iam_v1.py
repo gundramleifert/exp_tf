@@ -8,7 +8,7 @@ from tensorflow.contrib.layers import batch_norm
 from tensorflow.python.ops import rnn_cell
 from tensorflow.python.ops import control_flow_ops
 from tensorflow.python.ops.rnn import bidirectional_rnn
-from util.LoaderUtil import read_image_list, get_list_vals
+from util.LoaderUtil import read_image_list, get_list_vals, clean_list
 from util.CharacterMapper import get_cm_iam
 from util.saver import PrefixSaver
 from random import shuffle
@@ -38,6 +38,7 @@ nHiddenLSTM1 = 256
 
 os.chdir("../..")
 trainList = read_image_list(INPUT_PATH_TRAIN)
+trainList = clean_list(trainList, imgW, cm)
 numT = 1024  # number of training samples per epoch
 stepsPerEpochTrain = numT / batchSize
 valList = read_image_list(INPUT_PATH_VAL)

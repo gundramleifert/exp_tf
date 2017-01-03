@@ -12,26 +12,16 @@ def target_string_to_ctc_repr(targetString, charMap):
         aTgt.append(charMap[c])
     return aTgt
 
-def target_string_list_to_ctc_tensor_repr(targetList, charMap, strict):
+def target_string_list_to_ctc_tensor_repr(targetList, charMap):
     res = []
-    if strict:
-        skipList = [False] * len(targetList)
-    else:
-        skipList = None
     for i, tgt in enumerate(targetList):
         # encoded = tgt.decode('utf-8')
         aTgt = []
         for c in tgt:
-            try:
-                aTgt.append(charMap.get_channel(c))
-            except KeyError:
-                print('Character \'{}\' not in charMap, skipping...'.format(c))
-                if strict:
-                    skipList[i] = True
+            aTgt.append(charMap.get_channel(c))
         res.append(aTgt)
 
-    #print res
-    return target_list_to_sparse_tensor_repr(res) + (skipList,)
+    return target_list_to_sparse_tensor_repr(res)
 
 
 def target_list_to_sparse_tensor_repr(targetList):

@@ -71,7 +71,7 @@ class ModelHandler:
         loss = optimizer.minimize(cross_entropy)
         return loss, accuracy, cross_entropy
 
-    def train(self, mnist, epochs=1000, load_weights=False):
+    def train(self, mnist, epochs=1000, load_weights=True):
         X = tf.placeholder(tf.float32, [None, 28, 28, 1])
         GT = tf.placeholder(tf.float32, [None, 10])
         Ylogits, Y = self.create(X)
