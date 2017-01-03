@@ -33,7 +33,7 @@ batchSize = 16
 # It is assumed that the TextLines are ALL saved with a consistent height of imgH
 imgH = 32  # 64
 # Depending on the size the image is cropped or zero padded
-imgW = 1024  # 4096
+imgW = 2048  # 4096
 image_depth = 1
 nHiddenLSTM1 = 256
 

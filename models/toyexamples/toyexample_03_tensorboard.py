@@ -97,7 +97,7 @@ writer = tf.train.SummaryWriter(logdir)
 writer.add_graph(sess.graph)
 ########## END: initialize summary writer #######################
 
-idx = 1;
+# idx = 1
 
 for i in range(20000):
     # Load batch of images and correct answers

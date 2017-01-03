@@ -1,12 +1,13 @@
 import tensorflow as tf
-from django.template.smartif import prefix
+# from django.template.smartif import prefix
 from tensorflow.examples.tutorials.mnist import input_data
 import os
 from util.saver import PrefixSaver
 
 """
 A model is created (in scope 'net') and all weights are saved by the saver.
-Take a look at the main program - if you set load_weights=True the calculated weights are taken. To load the weights into another network have a look at toyexample_04_1_restore
+Take a look at the main program - if you set load_weights=True the calculated weights are taken.
+To load the weights into another network have a look at toyexample_04_1_restore.
 """
 
 

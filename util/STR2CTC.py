@@ -25,9 +25,11 @@ def target_string_list_to_ctc_tensor_repr(targetList, charMap, strict):
             try:
                 aTgt.append(charMap.get_channel(c))
             except KeyError:
-                print('Character \'{}\' not in charMap, skipping...'.format(c))
                 if strict:
+                    print('Character \'{}\' not in charMap, skipping image...'.format(c))
                     skipList[i] = True
+                else:
+                    print('Character \'{}\' not in charMap, deleting it...'.format(c))
         res.append(aTgt)
 
     #print res

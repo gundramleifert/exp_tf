@@ -122,4 +122,4 @@ if __name__ == '__main__':
     mnist = input_data.read_data_sets("resources/MNIST_data/", one_hot=True, reshape=False, validation_size=0)
     mh = ModelHandler()
     # mh.train(mnist, epochs=3000, load_weights=False)
-    mh.train(mnist, epochs=1000, load_weights=False)
+    mh.train(mnist, epochs=1000, load_weights=True)
