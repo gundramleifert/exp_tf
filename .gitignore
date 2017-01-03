@@ -21,6 +21,7 @@ parts/
 sdist/
 var/
 private/
+resources/MNIST_data/
 .idea/
 *.egg-info/
 .installed.cfg

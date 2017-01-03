@@ -63,9 +63,9 @@ def get_batch_imgs(bList, imgW, mvn):
             npad = ((0, 0), (0, padW))
             tImg = np.pad(aImg, npad, mode='constant', constant_values=0)
             aImg = tImg
-        if width > imgW:
-            tImg = aImg[:, :imgW]
-            aImg = tImg
+        # if width > imgW:
+        #     tImg = aImg[:, :imgW]
+        #     aImg = tImg
         # plt.imshow(aImg, cmap=plt.cm.gray)
         # plt.show()
         imgs.append(aImg)
@@ -81,6 +81,44 @@ def get_list_vals(bList, cm, imgW, mvn=False):
     tgtIdx, tgtVal, tgtShape = get_batch_labels(bList, cm)
     inpBatch, inpSeqL = get_batch_imgs(bList, imgW, mvn)
     return inpBatch, inpSeqL, tgtIdx, tgtVal, tgtShape
+
+
+def clean_list(list, imgW, cm):
+    res = []
+    # Count the skipped Images (width too big)
+    countW = 0
+    # Count the skipped Images (char not in charMap)
+    countC = 0
+    for path in list:
+        aImg = misc.imread(path)
+        width = aImg.shape[1]
+
+        # Skip image if image width is bigger than imgW
+        if width > imgW:
+            countW += 1
+            continue
+
+        # Skip image if a character is not in charMap
+        skip = False
+        labelFile = path[:] + ".txt"
+        tmp = codecs.open(labelFile, 'r', encoding='utf-8')
+        u_str = tmp.readline()
+        if tmp is not None:
+            tmp.close()
+        for c in u_str:
+            try:
+                cm.get_channel(c)
+            except KeyError:
+                # print('Character \'{}\' not in charMap, skipping Image...'.format(c))
+                skip = True
+                countC += 1
+                break
+
+        if not skip:
+            res.append(path)
+    print("Skipped {} out of {} images...".format(countC+countW, len(list)))
+    print("...{} too big images and additionally {} images with unknown characters.".format(countW, countC))
+    return res
 
 
 if __name__ == '__main__':
