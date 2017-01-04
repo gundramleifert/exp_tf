@@ -51,7 +51,7 @@ def main(_):
 
         # Assigns ops to the local worker by default.
         with tf.device(tf.train.replica_device_setter(
-                worker_device="/job:ps/replica:0/task:0/cpu:0",
+                worker_device="/job:worker/replica:0/task:1/cpu:0",
                 cluster=cluster)):
         # with tf.device(tf.train.replica_device_setter(
         #         worker_device="/job:worker/task:%d" % FLAGS.task_index,
