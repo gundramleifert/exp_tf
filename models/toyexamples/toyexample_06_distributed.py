@@ -55,7 +55,7 @@ def main(_):
             mh = ModelHandler()
             global_step = tf.Variable(0)
             logit, Y = mh.inference(X)
-            loss = mh.loss(logit, Y, Y_, include_summary=True)
+            loss, acc = mh.loss(logit, Y, Y_, include_summary=True)
             # minimize = mh.training(loss)
             train_op = tf.train.AdamOptimizer().minimize(loss, global_step=global_step)
 
