@@ -57,8 +57,7 @@ def main(_):
             logit, Y = mh.inference(X)
             loss = mh.loss(logit, Y, Y_, include_summary=True)
             # minimize = mh.training(loss)
-            train_op = tf.train.AdamOptimizer().minimize(
-                loss, global_step=global_step)
+            train_op = tf.train.AdamOptimizer().minimize(loss, global_step=global_step)
 
             saver = tf.train.Saver()
             summary_op = tf.summary.merge_all()

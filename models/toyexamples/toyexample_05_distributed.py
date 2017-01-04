@@ -28,27 +28,27 @@ class ModelHandler:
         # VARIABLES WITH PARAMETER SERVERS
         number = 1
         with tf.name_scope("net"):
-            with tf.device("/job:ps/task:0"):
-                with tf.name_scope("l" + str(number)):
-                    W1 = tf.Variable(tf.truncated_normal([784, K], stddev=0.1))
-                    B1 = tf.Variable(tf.zeros([K]))
-                number += 1
-                with tf.name_scope("l" + str(number)):
-                    W2 = tf.Variable(tf.truncated_normal([K, L], stddev=0.1))
-                    B2 = tf.Variable(tf.zeros([L]))
-                number += 1
-            with tf.device("/job:ps/task:1"):
-                with tf.name_scope("l" + str(number)):
-                    W3 = tf.Variable(tf.truncated_normal([L, M], stddev=0.1))
-                    B3 = tf.Variable(tf.zeros([M]))
-                number += 1
-                with tf.name_scope("l" + str(number)):
-                    W4 = tf.Variable(tf.truncated_normal([M, N], stddev=0.1))
-                    B4 = tf.Variable(tf.zeros([N]))
-                number += 1
-                with tf.name_scope("l" + str(number)):
-                    W5 = tf.Variable(tf.truncated_normal([N, 10], stddev=0.1))
-                    B5 = tf.Variable(tf.zeros([10]))
+            # with tf.device("/job:ps/task:0"):
+            with tf.name_scope("l" + str(number)):
+                W1 = tf.Variable(tf.truncated_normal([784, K], stddev=0.1))
+                B1 = tf.Variable(tf.zeros([K]))
+            number += 1
+            with tf.name_scope("l" + str(number)):
+                W2 = tf.Variable(tf.truncated_normal([K, L], stddev=0.1))
+                B2 = tf.Variable(tf.zeros([L]))
+            number += 1
+            # with tf.device("/job:ps/task:1"):
+            with tf.name_scope("l" + str(number)):
+                W3 = tf.Variable(tf.truncated_normal([L, M], stddev=0.1))
+                B3 = tf.Variable(tf.zeros([M]))
+            number += 1
+            with tf.name_scope("l" + str(number)):
+                W4 = tf.Variable(tf.truncated_normal([M, N], stddev=0.1))
+                B4 = tf.Variable(tf.zeros([N]))
+            number += 1
+            with tf.name_scope("l" + str(number)):
+                W5 = tf.Variable(tf.truncated_normal([N, 10], stddev=0.1))
+                B5 = tf.Variable(tf.zeros([10]))
         # model
         with tf.device("/job:worker/task:0"):
             XX = tf.reshape(X, [-1, 28 * 28])  # Input Layer
@@ -61,25 +61,25 @@ class ModelHandler:
         return HypLogit, Hyp
 
     def loss(self, hyp_logit, hyp, gt, include_summary=False):
-        with tf.device("/job:worker/task:0"):
-            # loss function
-            cross_entropy = tf.nn.softmax_cross_entropy_with_logits(hyp_logit, gt)
-            cross_entropy = tf.reduce_mean(cross_entropy)
+        # with tf.device("/job:worker/task:0"):
+        # loss function
+        cross_entropy = tf.nn.softmax_cross_entropy_with_logits(hyp_logit, gt)
+        cross_entropy = tf.reduce_mean(cross_entropy)
 
-            # % of correct answers found in batch
-            correct_prediction = tf.equal(tf.argmax(gt, 1), tf.argmax(hyp, 1))
-            accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-            if include_summary:
-                tf.scalar_summary("acc",accuracy)
-                tf.scalar_summary("entropy",cross_entropy)
-            return cross_entropy, accuracy
-            # training step
-            # learning_rate = 0.003
+        # % of correct answers found in batch
+        correct_prediction = tf.equal(tf.argmax(gt, 1), tf.argmax(hyp, 1))
+        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+        if include_summary:
+            tf.scalar_summary("acc", accuracy)
+            tf.scalar_summary("entropy", cross_entropy)
+        return cross_entropy, accuracy
+        # training step
+        # learning_rate = 0.003
 
     def training(self, cross_entropy):
-        with tf.device("/job:worker/task:0"):
-            optimizer = tf.train.AdamOptimizer()
-            loss = optimizer.minimize(cross_entropy)
+        # with tf.device("/job:worker/task:0"):
+        optimizer = tf.train.AdamOptimizer()
+        loss = optimizer.minimize(cross_entropy)
         return loss
 
 
@@ -97,7 +97,7 @@ if __name__ == '__main__':
 
     mh = ModelHandler()
     Ylogits, Y = mh.inference(X)
-    entropy, accuracy = mh.loss(Ylogits,Y,GT)
+    entropy, accuracy = mh.loss(Ylogits, Y, GT)
     minimize = mh.training(entropy)
     init = tf.global_variables_initializer()
     sess = tf.Session("grpc://worker0.example.com:2222")
@@ -137,4 +137,4 @@ if __name__ == '__main__':
                 "ps1.example.com:2222"
             ]})
         for key, value in spec.as_dict().iteritems():
-            print("key = {}; value = {}".format(key,value))
+            print("key = {}; value = {}".format(key, value))
