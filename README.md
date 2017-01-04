@@ -80,6 +80,7 @@ maybe interesting for HPCs: https://www.tensorflow.org/versions/master/how_tos/d
     <ul>
         <li> source activate tensorflow </li>
         <li> conda install pillow </li>
+    </ul>
     </li>
     <li>
     out of Memory using GPUs:
