@@ -40,17 +40,18 @@ def main(_):
         server.join()
     elif FLAGS.job_name == "worker":
 
+        mnist = input_data.read_data_sets("private/resources/MNIST_data/", one_hot=True, reshape=False,
+                                          validation_size=0)
+        # initialization
+        X = tf.placeholder(tf.float32, [None, 28, 28, 1])
+        # placeholder for correct answers
+        Y_ = tf.placeholder(tf.float32, [None, 10])
+
         # Assigns ops to the local worker by default.
         with tf.device(tf.train.replica_device_setter(
                 worker_device="/job:worker/task:%d" % FLAGS.task_index,
                 cluster=cluster)):
             # Data
-            mnist = input_data.read_data_sets("private/resources/MNIST_data/", one_hot=True, reshape=False,
-                                              validation_size=0)
-            # initialization
-            X = tf.placeholder(tf.float32, [None, 28, 28, 1])
-            # placeholder for correct answers
-            Y_ = tf.placeholder(tf.float32, [None, 10])
 
             # Build model...
             mh = ModelHandler()
