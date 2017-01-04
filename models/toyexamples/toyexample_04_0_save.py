@@ -1,4 +1,5 @@
 import tensorflow as tf
+# from django.template.smartif import prefix
 from tensorflow.examples.tutorials.mnist import input_data
 import os
 from util.saver import PrefixSaver

@@ -8,7 +8,7 @@ from tensorflow.contrib.layers import batch_norm
 from tensorflow.python.ops import rnn_cell
 from tensorflow.python.ops import control_flow_ops
 from tensorflow.python.ops.rnn import bidirectional_rnn
-from util.LoaderUtil import read_image_list, get_list_vals
+from util.LoaderUtil import read_image_list, get_list_vals, clean_list
 from util.CharacterMapper import get_cm_iam
 from util.saver import PrefixSaver
 from random import shuffle
@@ -26,7 +26,7 @@ cm = get_cm_iam()
 nClasses = cm.size() + 1
 
 nEpochs = 150
-batchSize = 16
+batchSize = 1
 # learningRate = 0.001
 # momentum = 0.9
 # It is assumed that the TextLines are ALL saved with a consistent height of imgH
@@ -35,12 +35,17 @@ imgH = 32  # 64
 imgW = 2048  # 4096
 image_depth = 1
 nHiddenLSTM1 = 256
+subsampling = 12
 
 os.chdir("../..")
 trainList = read_image_list(INPUT_PATH_TRAIN)
+print("Cleaning up train list..")
+trainList = clean_list(trainList, imgW, cm, subsampling)
 numT = 1024  # number of training samples per epoch
 stepsPerEpochTrain = numT / batchSize
 valList = read_image_list(INPUT_PATH_VAL)
+print("Cleaning up validation list..")
+valList = clean_list(valList, imgW, cm, subsampling)
 stepsPerEpochVal = len(valList) / batchSize
 
 
@@ -119,7 +124,7 @@ def inference(images, seqLen, keep_prob, phase_train):
             outputs, _, _ = bidirectional_rnn(droppedFW, droppedBW, rnnIn, dtype=tf.float32)
             fbH1rs = [tf.reshape(t, [batchSize, 2, nHiddenLSTM1]) for t in outputs]
             # outH1 = [tf.reduce_sum(tf.mul(t, weightsOutH1), reduction_indices=1) + biasesOutH1 for t in fbH1rs]
-            # eventually TODO instead of resuce_sum make matrix multiply
+            # eventually TODO instead of reduce_sum make matrix multiply
             outH1 = [tf.reduce_sum(t, reduction_indices=1) for t in fbH1rs]
         with tf.variable_scope('LOGIT') as scope:
             weightsClasses = tf.Variable(tf.truncated_normal([nHiddenLSTM1, nClasses],
