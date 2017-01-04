@@ -35,6 +35,7 @@ def main(_):
                              job_name=FLAGS.job_name,
                              task_index=FLAGS.task_index)
 
+    print("job_name = {}".format(FLAGS.job_name))
     if FLAGS.job_name == "ps":
         server.join()
     elif FLAGS.job_name == "worker":
@@ -63,6 +64,7 @@ def main(_):
             summary_op = tf.summary.merge_all()
             init_op = tf.global_variables_initializer()
 
+        print("is chief? {}".format(FLAGS.task_index == 0))
         # Create a "supervisor", which oversees the training process.
         sv = tf.train.Supervisor(is_chief=(FLAGS.task_index == 0),
                                  logdir="/tmp/train_logs",
@@ -71,13 +73,14 @@ def main(_):
                                  saver=saver,
                                  global_step=global_step,
                                  save_model_secs=600)
-
+        print("supervisor is set up")
         # The supervisor takes care of session initialization, restoring from
         # a checkpoint, and closing when done or an error occurs.
         with sv.managed_session(server.target) as sess:
             # Loop until the supervisor shuts down or 1000000 steps have completed.
             step = 0
             while not sv.should_stop() and step < 1000000:
+                print("step {}".format(step))
                 batch_X, batch_Y = mnist.train.next_batch(100)
                 train_data = {X: batch_X, Y_: batch_Y}
 
