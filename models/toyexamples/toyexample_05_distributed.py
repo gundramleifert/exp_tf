@@ -70,8 +70,8 @@ class ModelHandler:
         correct_prediction = tf.equal(tf.argmax(gt, 1), tf.argmax(hyp, 1))
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
         if include_summary:
-            tf.scalar_summary("acc", accuracy)
-            tf.scalar_summary("entropy", cross_entropy)
+            tf.summary.scalar("acc", accuracy)
+            tf.summary.scalar("entropy", cross_entropy)
         return cross_entropy, accuracy
         # training step
         # learning_rate = 0.003
