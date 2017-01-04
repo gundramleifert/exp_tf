@@ -55,6 +55,7 @@ https://github.com/sherrym/tf-tutorial
 https://github.com/aymericdamien/TensorFlow-Examples.git
 
 <b> Saving images in Tensorboard: </b>
+
 http://stackoverflow.com/questions/38543850/tensorflow-how-to-display-custom-images-in-tensorboard-e-g-matplotlib-plots
 
 ==> do not try to understand anything without reading these in advance :-)
@@ -76,7 +77,7 @@ maybe interesting for HPCs: https://www.tensorflow.org/versions/master/how_tos/d
     bash: >source activate tensorflow
     </li>
     <li>
-    Methods of scipy do not work ("AttributeError: 'module' object has no attribute'<method>'":
+    Methods of scipy do not work ("AttributeError: 'module' object has no attribute '&lt;method&gt;'"):
     <ul>
         <li> source activate tensorflow </li>
         <li> conda install pillow </li>
