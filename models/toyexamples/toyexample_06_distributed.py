@@ -52,7 +52,7 @@ def main(_):
             Y_ = tf.placeholder(tf.float32, [None, 10])
 
             # Build model...
-            mh = ModelHandler
+            mh = ModelHandler()
             global_step = tf.Variable(0)
             logit, Y = mh.inference(X)
             loss = mh.loss(logit, Y, Y_, include_summary=True)
