@@ -62,9 +62,9 @@ def get_cm_iam():
     cm.add(u';')
     cm.add(u'&')
     cm.add(u'/')
-    # cm.add(u'#')
-    # cm.add(u'+')
-    # cm.add(u'*')
+    cm.add(u'#')
+    cm.add(u'+')
+    cm.add(u'*')
     return cm
 
 
