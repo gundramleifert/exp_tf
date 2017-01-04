@@ -2,6 +2,7 @@ import tensorflow as tf
 from toyexample_05_distributed import ModelHandler
 from tensorflow.examples.tutorials.mnist import input_data
 import toyexample_05_serverfile as serverfile
+import util.saver as svr
 
 # Flags for defining the tf.train.Server
 tf.app.flags.DEFINE_string("job_name", "ps", "One of 'ps', 'worker'")
@@ -61,7 +62,8 @@ def main(_):
             # minimize = mh.training(loss)
             train_op = tf.train.AdamOptimizer().minimize(loss, global_step=global_step)
 
-            saver = tf.train.Saver()
+            list=svr.get_op("net/")
+            saver = tf.train.Saver(list)
             summary_op = tf.summary.merge_all()
             init_op = tf.global_variables_initializer()
 
