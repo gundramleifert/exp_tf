@@ -77,6 +77,7 @@ def main(_):
         # The supervisor takes care of session initialization, restoring from
         # a checkpoint, and closing when done or an error occurs.
         with sv.managed_session(server.target) as sess:
+            print("session started...")
             # Loop until the supervisor shuts down or 1000000 steps have completed.
             step = 0
             while not sv.should_stop() and step < 1000000:
