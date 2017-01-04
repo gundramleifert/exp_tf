@@ -47,6 +47,7 @@ def main(_):
         X = tf.placeholder(tf.float32, [None, 28, 28, 1])
         # placeholder for correct answers
         Y_ = tf.placeholder(tf.float32, [None, 10])
+        global_step = tf.Variable(0)
 
         # Assigns ops to the local worker by default.
         with tf.device(tf.train.replica_device_setter(
@@ -56,13 +57,12 @@ def main(_):
 
             # Build model...
             mh = ModelHandler()
-            global_step = tf.Variable(0)
             logit, Y = mh.inference(X)
             loss, acc = mh.loss(logit, Y, Y_, include_summary=True)
             # minimize = mh.training(loss)
             train_op = tf.train.AdamOptimizer().minimize(loss, global_step=global_step)
 
-            list=svr.get_op("net/")
+            list = svr.get_op("net/")
             saver = tf.train.Saver(list)
             summary_op = tf.summary.merge_all()
             init_op = tf.global_variables_initializer()
