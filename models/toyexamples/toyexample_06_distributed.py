@@ -64,6 +64,7 @@ def main(_):
 
             list = svr.get_op("net/")
             saver = tf.train.Saver(list)
+            saver = None
             summary_op = tf.summary.merge_all()
             init_op = tf.global_variables_initializer()
 
