@@ -17,6 +17,7 @@ import toyexample_05_serverfile as serverfile
 from six.moves import urllib
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
+from tensorflow.examples.tutorials.mnist import input_data
 
 SOURCE_URL = 'http://yann.lecun.com/exdb/mnist/'
 WORK_DIRECTORY = 'data'
@@ -140,24 +141,27 @@ def main(argv=None):  # pylint: disable=unused-argument
         num_epochs = 1
     else:
         # Get the data.
-        train_data_filename = maybe_download('train-images-idx3-ubyte.gz')
-        train_labels_filename = maybe_download('train-labels-idx1-ubyte.gz')
-        test_data_filename = maybe_download('t10k-images-idx3-ubyte.gz')
-        test_labels_filename = maybe_download('t10k-labels-idx1-ubyte.gz')
+        # train_data_filename = maybe_download('train-images-idx3-ubyte.gz')
+        # train_labels_filename = maybe_download('train-labels-idx1-ubyte.gz')
+        # test_data_filename = maybe_download('t10k-images-idx3-ubyte.gz')
+        # test_labels_filename = maybe_download('t10k-labels-idx1-ubyte.gz')
+        mnist = input_data.read_data_sets("private/resources/MNIST_data/", one_hot=True, reshape=False,
+                                          validation_size=0)
 
         # Extract it into numpy arrays.
-        train_data = extract_data(train_data_filename, 60000)
-        train_labels = extract_labels(train_labels_filename, 60000)
-        test_data = extract_data(test_data_filename, 10000)
-        test_labels = extract_labels(test_labels_filename, 10000)
+        # train_data = extract_data(train_data_filename, 60000)
+        # train_labels = extract_labels(train_labels_filename, 60000)
+        # test_data = extract_data(test_data_filename, 10000)
+        # test_labels = extract_labels(test_labels_filename, 10000)
 
         # Generate a validation set.
-        validation_data = train_data[:VALIDATION_SIZE, ...]
-        validation_labels = train_labels[:VALIDATION_SIZE]
-        train_data = train_data[VALIDATION_SIZE:, ...]
-        train_labels = train_labels[VALIDATION_SIZE:]
+        # validation_data = train_data[:VALIDATION_SIZE, ...]
+        # validation_labels = train_labels[:VALIDATION_SIZE]
+        # train_data = train_data[VALIDATION_SIZE:, ...]
+        # train_labels = train_labels[VALIDATION_SIZE:]
         num_epochs = NUM_EPOCHS
     ##########################################################################################
+    print("flag of job is {}".format(FLAGS.job_name))
     if FLAGS.job_name == "ps":
         server.join()
     elif FLAGS.job_name == "worker":
@@ -167,7 +171,7 @@ def main(argv=None):  # pylint: disable=unused-argument
                 cluster=cluster)):
             ##########################################################################################
             train_size = train_labels.shape[0]
-
+            print("device is set up")
             # This is where training samples and labels are fed to the graph.
             # These placeholder nodes will be fed a batch of training data at each
             # training step using the {feed_dict} argument to the Run() call below.
@@ -322,6 +326,7 @@ def main(argv=None):  # pylint: disable=unused-argument
         # with tf.Session() as sess:
         # with sv.managed_session(server.target) as sess:
         with sv.prepare_or_wait_for_session(server.target, config=None) as sess:
+            validation_data, validation_labels = mnist.validation.next_batch(EVAL_BATCH_SIZE)
             # Loop through training steps.
             for step in xrange(int(num_epochs * train_size) // BATCH_SIZE):
                 # step = 0
@@ -329,12 +334,13 @@ def main(argv=None):  # pylint: disable=unused-argument
                 # Compute the offset of the current minibatch in the data.
                 # Note that we could use better randomization across epochs.
                 offset = (step * BATCH_SIZE) % (train_size - BATCH_SIZE)
-                batch_data = train_data[offset:(offset + BATCH_SIZE), ...]
-                batch_labels = train_labels[offset:(offset + BATCH_SIZE)]
+                # data = mnist.train.next_batch(100)
+                batch_X, batch_Y = mnist.train.next_batch(BATCH_SIZE)
+                # train_data = {X: batch_X, Y_: batch_Y}
                 # This dictionary maps the batch data (as a numpy array) to the
                 # node in the graph it should be fed to.
-                feed_dict = {train_data_node: batch_data,
-                             train_labels_node: batch_labels}
+                feed_dict = {train_data_node: batch_X,
+                             train_labels_node: batch_Y}
                 # Run the graph and fetch some of the nodes.
                 _, l, lr, predictions = sess.run(
                     [optimizer, loss, learning_rate, train_prediction],
@@ -346,17 +352,16 @@ def main(argv=None):  # pylint: disable=unused-argument
                           (step, float(step) * BATCH_SIZE / train_size,
                            1000 * elapsed_time / EVAL_FREQUENCY))
                     print('Minibatch loss: %.3f, learning rate: %.6f' % (l, lr))
-                    print('Minibatch error: %.1f%%' % error_rate(predictions, batch_labels))
-                    print('Validation error: %.1f%%' % error_rate(
-                        eval_in_batches(validation_data, sess), validation_labels))
+                    # print('Minibatch error: %.1f%%' % error_rate(predictions, validation_labels))
+                    print('Validation error: %.1f%%' % error_rate(eval_in_batches(validation_data, sess), validation_labels))
                     sys.stdout.flush()
             # Finally print the result!
-            test_error = error_rate(eval_in_batches(test_data, sess), test_labels)
-            print('Test error: %.1f%%' % test_error)
-            if FLAGS.self_test:
-                print('test_error', test_error)
-                assert test_error == 0.0, 'expected 0.0 test_error, got %.2f' % (
-                    test_error,)
+            # test_error = error_rate(eval_in_batches(test_data, sess), test_labels)
+            # print('Test error: %.1f%%' % test_error)
+            # if FLAGS.self_test:
+            #     print('test_error', test_error)
+            #     assert test_error == 0.0, 'expected 0.0 test_error, got %.2f' % (
+            #         test_error,)
         # Ask for all the services to stop.
         sv.stop()
 
