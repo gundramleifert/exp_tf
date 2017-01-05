@@ -170,7 +170,7 @@ def main(argv=None):  # pylint: disable=unused-argument
                 worker_device="/job:worker/task:%d" % FLAGS.task_index,
                 cluster=cluster)):
             ##########################################################################################
-            train_size = train_labels.shape[0]
+            # train_size = train_labels.shape[0]
             print("device is set up")
             # This is where training samples and labels are fed to the graph.
             # These placeholder nodes will be fed a batch of training data at each
@@ -269,7 +269,7 @@ def main(argv=None):  # pylint: disable=unused-argument
             learning_rate = tf.train.exponential_decay(
                 0.01,  # Base learning rate.
                 batch * BATCH_SIZE,  # Current index into the dataset.
-                train_size,  # Decay step.
+                10000,  # Decay step.
                 0.95,  # Decay rate.
                 staircase=True)
             # Use simple momentum for the optimization.
