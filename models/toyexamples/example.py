@@ -127,7 +127,9 @@ elif FLAGS.job_name == "worker":
 
     begin_time = time.time()
     frequency = 100
+    print("before starting session")
     with sv.prepare_or_wait_for_session(server.target) as sess:
+        print("after starting session")
         '''
         # is chief
         if FLAGS.task_index == 0:
