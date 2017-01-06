@@ -18,15 +18,15 @@ from __future__ import print_function
 import tensorflow as tf
 import sys
 import time
-import toyexample_05_serverfile
+import cluster_spec
 
 # cluster specification
-parameter_servers = ["pc-01:2222"]
-workers = ["pc-02:2222",
-           "pc-03:2222",
-           "pc-04:2222"]
+# parameter_servers = ["pc-01:2222"]
+# workers = ["pc-02:2222",
+#            "pc-03:2222",
+#            "pc-04:2222"]
 # cluster = tf.train.ClusterSpec({"ps":parameter_servers, "worker":workers})
-cluster = toyexample_05_serverfile.get_cluster_spec()
+cluster = cluster_spec.get_cluster_spec()
 # input flags
 tf.app.flags.DEFINE_string("job_name", "", "Either 'ps' or 'worker'")
 tf.app.flags.DEFINE_integer("task_index", 0, "Index of task within the job")
@@ -127,7 +127,9 @@ elif FLAGS.job_name == "worker":
 
     begin_time = time.time()
     frequency = 100
+    print("before starting session")
     with sv.prepare_or_wait_for_session(server.target) as sess:
+        print("after starting session")
         '''
         # is chief
         if FLAGS.task_index == 0:

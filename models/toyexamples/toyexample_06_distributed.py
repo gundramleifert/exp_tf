@@ -1,7 +1,7 @@
 import tensorflow as tf
 from toyexample_05_distributed import ModelHandler
 from tensorflow.examples.tutorials.mnist import input_data
-import toyexample_05_serverfile as serverfile
+import cluster_spec as serverfile
 import util.saver as svr
 
 # Flags for defining the tf.train.Server
