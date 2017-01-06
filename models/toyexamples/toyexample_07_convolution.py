@@ -53,10 +53,6 @@ flags.DEFINE_string("data_dir", "/tmp/mnist-data",
 flags.DEFINE_boolean("download_only", False,
                      "Only perform downloading of data; Do not proceed to "
                      "session preparation, model definition or training")
-flags.DEFINE_integer("task_index", None,
-                     "Worker task index, should be >= 0. task_index=0 is "
-                     "the master worker task the performs the variable "
-                     "initialization ")
 flags.DEFINE_integer("num_gpus", 0,
                      "Total number of gpus for each machine."
                      "If you don't use GPU, please set it to '0'")
@@ -70,7 +66,7 @@ flags.DEFINE_integer("train_steps", 200,
                      "Number of (global) training steps to perform")
 flags.DEFINE_integer("batch_size", 100, "Training batch size")
 flags.DEFINE_float("learning_rate", 0.01, "Learning rate")
-flags.DEFINE_boolean("sync_replicas", True,
+flags.DEFINE_boolean("sync_replicas", False,
                      "Use the sync_replicas (synchronized replicas) mode, "
                      "wherein the parameter updates from workers are aggregated "
                      "before applied to avoid stale gradients")
@@ -83,7 +79,11 @@ flags.DEFINE_string("ps_hosts","localhost:2222",
                     "Comma-separated list of hostname:port pairs")
 flags.DEFINE_string("worker_hosts", "localhost:2223,localhost:2224",
                     "Comma-separated list of hostname:port pairs")
-flags.DEFINE_string("job_name", None,"job name: worker or ps")
+flags.DEFINE_string("job_name", "worker","job name: worker or ps")
+flags.DEFINE_integer("task_index", -1,
+                     "Worker task index, should be >= 0. task_index=0 is "
+                     "the master worker task the performs the variable "
+                     "initialization ")
 
 FLAGS = flags.FLAGS
 

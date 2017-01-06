@@ -81,6 +81,7 @@ maybe interesting for HPCs: https://www.tensorflow.org/versions/master/how_tos/d
     <ul>
         <li> source activate tensorflow </li>
         <li> conda install pillow </li>
+        <li> export PYTHON_PATH=<path_to_sources>:$PYTHON_PATH
     </ul>
     </li>
     <li>
