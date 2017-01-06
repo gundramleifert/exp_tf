@@ -26,26 +26,29 @@ cm = get_cm_iam()
 nClasses = cm.size() + 1
 
 nEpochs = 150
-batchSize = 1
+batchSize = 16
 # learningRate = 0.001
 # momentum = 0.9
 # It is assumed that the TextLines are ALL saved with a consistent height of imgH
 imgH = 32  # 64
-# Depending on the size the image is cropped or zero padded
-imgW = 2048  # 4096
+# Depending on the size the image is skipped or zero padded
+imgW = 1024  # 4096
 image_depth = 1
 nHiddenLSTM1 = 256
+# Needs to be consistent with subsampling [X] in the model to correctly clean up the data
 subsampling = 12
 
 os.chdir("../..")
+
 trainList = read_image_list(INPUT_PATH_TRAIN)
-print("Cleaning up train list..")
+valList = read_image_list(INPUT_PATH_VAL)
+print("Cleaning up train list:")
 trainList = clean_list(trainList, imgW, cm, subsampling)
+print("Cleaning up validation list:")
+valList = clean_list(valList, imgW, cm, subsampling)
+
 numT = 1024  # number of training samples per epoch
 stepsPerEpochTrain = numT / batchSize
-valList = read_image_list(INPUT_PATH_VAL)
-print("Cleaning up validation list..")
-valList = clean_list(valList, imgW, cm, subsampling)
 stepsPerEpochVal = len(valList) / batchSize
 
 
@@ -199,7 +202,7 @@ with tf.Session(graph=graph) as session:
         print('Train: CTC-loss ', lossT)
         cerT = errT / stepsPerEpochTrain
         print('Train: CER ', cerT)
-        print('Train time ', time.time() - timeTS)
+        print('Train: time ', time.time() - timeTS)
         workList = valList[:]
         errV = 0
         lossV = 0
@@ -227,6 +230,6 @@ with tf.Session(graph=graph) as session:
         print('Val: CTC-loss ', lossV)
         errVal = errV / stepsPerEpochVal
         print('Val: CER ', errVal)
-        print('Val time ', time.time() - timeVS)
+        print('Val: time ', time.time() - timeVS)
         # Write a checkpoint.
         saver.save(session, global_step=epoch)

@@ -44,9 +44,9 @@ def get_batch_imgs(bList, imgW, mvn):
     imgs = []
     seqL = []
 
-    print("\n")
+    # print("\n")
     for path in bList:
-        print(path)
+        # print(path)
         aImg = misc.imread(path)
         width = aImg.shape[1]
         hei = aImg.shape[0]
