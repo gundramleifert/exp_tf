@@ -44,6 +44,7 @@ import tempfile
 import time
 
 import tensorflow as tf
+from django.db.models.expressions import F
 from tensorflow.examples.tutorials.mnist import input_data
 
 
@@ -70,7 +71,7 @@ flags.DEFINE_integer("train_steps", 200,
                      "Number of (global) training steps to perform")
 flags.DEFINE_integer("batch_size", 100, "Training batch size")
 flags.DEFINE_float("learning_rate", 0.01, "Learning rate")
-flags.DEFINE_boolean("sync_replicas", True,
+flags.DEFINE_boolean("sync_replicas", False,
                      "Use the sync_replicas (synchronized replicas) mode, "
                      "wherein the parameter updates from workers are aggregated "
                      "before applied to avoid stale gradients")
@@ -188,8 +189,8 @@ def main(unused_argv):
 
     if FLAGS.sync_replicas:
       local_init_op = opt.local_step_init_op
-      if is_chief:
-        local_init_op = opt.chief_init_op
+      # if is_chief:
+      local_init_op = opt.chief_init_op
 
       ready_for_local_init_op = opt.ready_for_local_init_op
 
@@ -241,7 +242,7 @@ def main(unused_argv):
 
     print("Worker %d: Session initialization complete." % FLAGS.task_index)
 
-    if FLAGS.sync_replicas and is_chief:
+    if FLAGS.sync_replicas:
       # Chief worker will start the chief queue runner and call the init op.
       sess.run(sync_init_op)
       sv.start_queue_runners(sess, [chief_queue_runner])
