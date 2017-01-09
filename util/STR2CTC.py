@@ -15,9 +15,9 @@ def target_string_to_ctc_repr(targetString, charMap):
 def target_string_list_to_ctc_tensor_repr(targetList, charMap):
     res = []
     for i, tgt in enumerate(targetList):
-        # encoded = tgt.decode('utf-8')
+        encoded = tgt.decode('utf-8')
         aTgt = []
-        for c in tgt:
+        for c in encoded:
             aTgt.append(charMap.get_channel(c))
         res.append(aTgt)
 
@@ -41,6 +41,20 @@ def target_list_to_sparse_tensor_repr(targetList):
     shape = [len(targetList), np.asarray(indices).max(0)[1] + 1]
     return (np.array(indices), np.array(vals), np.array(shape))
 
+
+def target_to_int_repr(target, charMap):
+    """
+    Args:
+    Inputs:
+     Target String
+    Returns:
+     Int value representation
+    """
+    vals = []
+    encoded = target.decode('utf-8')
+    for c in encoded:
+        vals.append(charMap.get_channel(c))
+    return vals
 
 
 # def get_charmap_lp():
