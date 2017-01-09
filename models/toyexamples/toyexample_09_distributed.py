@@ -37,7 +37,7 @@ server = tf.train.Server(cluster,
 # config
 batch_size = 100
 learning_rate = 0.0005
-training_epochs = 20
+training_epochs = 100
 logs_path = "/tmp/mnist/1"
 
 # load mnist data set
@@ -130,7 +130,9 @@ elif FLAGS.job_name == "worker":
 
     begin_time = time.time()
     frequency = 100
+    print("wait for others...")
     with sv.prepare_or_wait_for_session(server.target) as sess:
+        print("wait for others... [DONE]")
         '''
         # is chief
         if FLAGS.task_index == 0:
@@ -143,7 +145,7 @@ elif FLAGS.job_name == "worker":
         # perform training cycles
         start_time = time.time()
         for epoch in range(training_epochs):
-
+            print("task_index = {} job_name = {}".format(FLAGS.task_index,FLAGS.job_name))
             # number of batches in one epoch
             batch_count = int(mnist.train.num_examples / batch_size)
 
