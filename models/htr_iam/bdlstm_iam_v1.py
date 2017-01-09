@@ -26,7 +26,7 @@ cm = get_cm_iam()
 nClasses = cm.size() + 1
 
 nEpochs = 150
-batchSize = 1
+batchSize = 16
 # learningRate = 0.001
 # momentum = 0.9
 # It is assumed that the TextLines are ALL saved with a consistent height of imgH
