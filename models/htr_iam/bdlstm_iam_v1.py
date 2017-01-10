@@ -183,8 +183,10 @@ with tf.Session(graph=graph) as session:
         lossT = 0
         errT = 0
         timeTS = time.time()
+        tTL = 0
         for bStep in range(stepsPerEpochTrain):
             bList, workList = workList[:batchSize], workList[batchSize:]
+            timeTemp = time.time()
             batchInputs, \
             batchSeqLengths, \
             batchTargetIdxs, \
@@ -194,6 +196,7 @@ with tf.Session(graph=graph) as session:
                 cm,
                 imgW,
                 mvn=False)
+            tTL += time.time() - timeTemp
             feedDict = {inputX: batchInputs, targetIxs: batchTargetIdxs, targetVals: batchTargetVals,
                         targetShape: batchTargetShape, seqLengths: batchSeqLengths, keep_prob: 0.5, trainIN: True}
             _, lossB, aErr = session.run([optimizer, loss, err], feed_dict=feedDict)
@@ -203,12 +206,15 @@ with tf.Session(graph=graph) as session:
         cerT = errT / stepsPerEpochTrain
         print('Train: CER ', cerT)
         print('Train: time ', time.time() - timeTS)
+        print('Time for loading train data: ', tTL)
         workList = valList[:]
         errV = 0
         lossV = 0
         timeVS = time.time()
+        tVL = 0
         for bStep in range(stepsPerEpochVal):
             bList, workList = workList[:batchSize], workList[batchSize:]
+            timeTemp = time.time()
             batchInputs, \
             batchSeqLengths, \
             batchTargetIdxs, \
@@ -219,6 +225,7 @@ with tf.Session(graph=graph) as session:
                 imgW,
                 mvn=False
             )
+            tVL += time.time() - timeTemp
             feedDict = {inputX: batchInputs, targetIxs: batchTargetIdxs, targetVals: batchTargetVals,
                         targetShape: batchTargetShape, seqLengths: batchSeqLengths, keep_prob: 1.0, trainIN: False}
             lossB, aErr = session.run([loss, err], feed_dict=feedDict)
@@ -231,8 +238,9 @@ with tf.Session(graph=graph) as session:
         errVal = errV / stepsPerEpochVal
         print('Val: CER ', errVal)
         print('Val: time ', time.time() - timeVS)
+        print('Time for loading validation data: ', tVL)
         # Write a checkpoint.
         saveTime =  time.time()
         print('Saving...')
         saver.save(session, global_step=epoch)
-        print('Save time: ', time.time() - saveTime)
+        print('Time for saving: ', time.time() - saveTime)
