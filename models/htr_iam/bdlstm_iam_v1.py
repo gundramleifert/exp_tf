@@ -32,7 +32,7 @@ batchSize = 16
 # It is assumed that the TextLines are ALL saved with a consistent height of imgH
 imgH = 32  # 64
 # Depending on the size the image is skipped or zero padded
-imgW = 1024  # 4096
+imgW = 2048  # 4096
 image_depth = 1
 nHiddenLSTM1 = 256
 # Needs to be consistent with subsampling [X] in the model to correctly clean up the data
@@ -232,4 +232,7 @@ with tf.Session(graph=graph) as session:
         print('Val: CER ', errVal)
         print('Val: time ', time.time() - timeVS)
         # Write a checkpoint.
+        saveTime =  time.time()
+        print('Saving...')
         saver.save(session, global_step=epoch)
+        print('Save time: ', time.time() - saveTime)

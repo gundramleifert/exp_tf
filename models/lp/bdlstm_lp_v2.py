@@ -182,7 +182,7 @@ with tf.Session(graph=graph) as session:
             res.append(cmInv[idx])
         print(res)
         # print(p)
-        plt.imshow(batchInputs[0,:,:,0], cmap=plt.cm.gray)
+        plt.imshow(batchInputs[0,:,:,0], cmap=plt.get_cmap("gray"))
         plt.show()
 
         lossV += lossB
