@@ -1,77 +1,58 @@
 import tensorflow as tf
-from toyexample_05_distributed import ModelHandler
-from tensorflow.examples.tutorials.mnist import input_data
-import cluster_spec as serverfile
-import util.saver as svr
+import numpy as np
+import os
 
-# Flags for defining the tf.train.Server
-tf.app.flags.DEFINE_string("job_name", "ps", "One of 'ps', 'worker'")
-tf.app.flags.DEFINE_integer("task_index", 0, "Index of task within the job")
-
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
+os.environ['TF_CPP_MIN_VLOG_LEVEL'] = '0'
 # Flags for defining the tf.train.ClusterSpec
 tf.app.flags.DEFINE_string("ps_hosts", "",
                            "Comma-separated list of hostname:port pairs")
 tf.app.flags.DEFINE_string("worker_hosts", "",
                            "Comma-separated list of hostname:port pairs")
+tf.logging.set_verbosity(tf.logging.DEBUG)
+# Flags for defining the tf.train.Server
+tf.app.flags.DEFINE_string("job_name", "", "One of 'ps', 'worker'")
+tf.app.flags.DEFINE_integer("task_index", 0, "Index of task within the job")
 
 FLAGS = tf.app.flags.FLAGS
 
 
 def main(_):
-    ps_hosts = FLAGS.ps_hosts.split(",")
-    worker_hosts = FLAGS.worker_hosts.split(",")
+    ps_hosts = ["localhost:2222"]
+    worker_hosts = ["localhost:2223", "localhost:2224"]
 
     # Create a cluster from the parameter server and worker hosts.
-    # if  len(ps_hosts)==0:
-    if len(ps_hosts) == 1 and ps_hosts[0] == '':
-        cluster = serverfile.get_cluster_spec()
-        print("use predefined cluster specification")
-    else:
-        cluster_spec = {"ps": ps_hosts, "worker": worker_hosts}
-        print(cluster_spec)
-        cluster = tf.train.ClusterSpec(cluster_spec)
+    cluster = tf.train.ClusterSpec({"ps": ps_hosts, "worker": worker_hosts})
 
     # Create and start a server for the local task.
     server = tf.train.Server(cluster,
                              job_name=FLAGS.job_name,
                              task_index=FLAGS.task_index)
-
-    print("job_name = {}".format(FLAGS.job_name))
+    print("before different phases...")
     if FLAGS.job_name == "ps":
+        print("be in ps: join...")
         server.join()
+        print("be in ps: join... DONE")
     elif FLAGS.job_name == "worker":
-
-        mnist = input_data.read_data_sets("private/resources/MNIST_data/", one_hot=True, reshape=False,
-                                          validation_size=0)
-        # initialization
-        X = tf.placeholder(tf.float32, [None, 28, 28, 1])
-        # placeholder for correct answers
-        Y_ = tf.placeholder(tf.float32, [None, 10])
-        global_step = tf.Variable(0)
-
+        print("be in worker: join...")
         # Assigns ops to the local worker by default.
         with tf.device(tf.train.replica_device_setter(
-                worker_device="/job:worker/replica:0/task:1/cpu:0",
+                worker_device="/job:worker/task:%d" % FLAGS.task_index,
                 cluster=cluster)):
-        # with tf.device(tf.train.replica_device_setter(
-        #         worker_device="/job:worker/task:%d" % FLAGS.task_index,
-        #         cluster=cluster)):
-            # Data
-
+            print("replica devices done!")
             # Build model...
-            mh = ModelHandler()
-            logit, Y = mh.inference(X)
-            loss, acc = mh.loss(logit, Y, Y_, include_summary=True)
-            # minimize = mh.training(loss)
-            train_op = tf.train.AdamOptimizer().minimize(loss, global_step=global_step)
+            x = tf.placeholder("float", [10, 10], name="x")
+            y = tf.placeholder("float", [10, 1], name="y")
+            initial_w = np.zeros((10, 1))
+            w = tf.Variable(initial_w, name="w", dtype="float32")
+            loss = tf.pow(tf.add(y, -tf.matmul(x, w)), 2, name="loss")
+            global_step = tf.Variable(0)
 
-            list = svr.get_op("net/")
-            saver = tf.train.Saver(list)
-            saver = None
-            summary_op = tf.summary.merge_all()
-            init_op = tf.global_variables_initializer()
+            saver = tf.train.Saver()
+            summary_op = tf.merge_all_summaries()
+            init_op = tf.initialize_all_variables()
 
-        print("is chief? {}".format(FLAGS.task_index == 0))
+            print("before supervisor")
         # Create a "supervisor", which oversees the training process.
         sv = tf.train.Supervisor(is_chief=(FLAGS.task_index == 0),
                                  logdir="/tmp/train_logs",
@@ -80,22 +61,24 @@ def main(_):
                                  saver=saver,
                                  global_step=global_step,
                                  save_model_secs=600)
-        print("supervisor is set up")
+        print("after supervisor")
+
         # The supervisor takes care of session initialization, restoring from
         # a checkpoint, and closing when done or an error occurs.
         with sv.managed_session(server.target) as sess:
-            print("session started...")
+            print("in session")
             # Loop until the supervisor shuts down or 1000000 steps have completed.
             step = 0
             while not sv.should_stop() and step < 1000000:
-                print("step {}".format(step))
-                batch_X, batch_Y = mnist.train.next_batch(100)
-                train_data = {X: batch_X, Y_: batch_Y}
-
                 # Run a training step asynchronously.
                 # See `tf.train.SyncReplicasOptimizer` for additional details on how to
                 # perform *synchronous* training.
-                _, step = sess.run([train_op, global_step], feed_dict=train_data)
+                _, step = sess.run([loss, global_step],
+                                   {
+                                       x: np.random.rand(10, 10),
+                                       y: np.random.rand(10).reshape(-1, 1)
+                                   })
+                print("job_name: %s; task_index: %s; step: %d" % (FLAGS.job_name, FLAGS.task_index, step))
 
         # Ask for all the services to stop.
         sv.stop()
