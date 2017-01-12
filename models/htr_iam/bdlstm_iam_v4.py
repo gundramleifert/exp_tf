@@ -26,7 +26,7 @@ cm = get_cm_iam()
 nClasses = cm.size() + 1
 
 nEpochs = 150
-batchSize = 16
+batchSize = 64
 # learningRate = 0.001
 # momentum = 0.9
 # It is assumed that the TextLines are ALL saved with a consistent height of imgH
@@ -34,7 +34,7 @@ imgH = 32  # 64
 # Depending on the size the image is skipped or zero padded
 imgW = 2048  # 4096
 image_depth = 1
-nHiddenLSTM1 = 256
+nHiddenLSTM1 = 512
 # Needs to be consistent with subsampling [X] in the model to correctly clean up the data
 subsampling = 12
 
@@ -47,7 +47,7 @@ trainList = clean_list(trainList, imgW, cm, subsampling)
 print("Cleaning up validation list:")
 valList = clean_list(valList, imgW, cm, subsampling)
 
-numT = 1024  # number of training samples per epoch
+numT = 2048  # number of training samples per epoch
 stepsPerEpochTrain = numT / batchSize
 stepsPerEpochVal = len(valList) / batchSize
 
@@ -195,7 +195,7 @@ with tf.Session(graph=graph) as session:
                 bList,
                 cm,
                 imgW,
-                mvn=False)
+                mvn=True)
             tTL += time.time() - timeTemp
             feedDict = {inputX: batchInputs, targetIxs: batchTargetIdxs, targetVals: batchTargetVals,
                         targetShape: batchTargetShape, seqLengths: batchSeqLengths, keep_prob: 0.5, trainIN: True}
@@ -223,7 +223,7 @@ with tf.Session(graph=graph) as session:
                 bList,
                 cm,
                 imgW,
-                mvn=False
+                mvn=True
             )
             tVL += time.time() - timeTemp
             feedDict = {inputX: batchInputs, targetIxs: batchTargetIdxs, targetVals: batchTargetVals,
@@ -239,8 +239,9 @@ with tf.Session(graph=graph) as session:
         print('Val: CER ', errVal)
         print('Val: time ', time.time() - timeVS)
         print('Time for loading validation data: ', tVL)
-        # Write a checkpoint.
-        saveTime =  time.time()
-        print('Saving...')
-        saver.save(session, global_step=epoch)
-        print('Time for saving: ', time.time() - saveTime)
+        # Write a checkpoint every 10 epochs
+        if (epoch+1) % 10 == 0:
+            saveTime =  time.time()
+            print('Saving...')
+            saver.save(session, global_step=epoch)
+            print('Time for saving: ', time.time() - saveTime)

@@ -72,11 +72,12 @@ def get_batch_imgs(bList, imgW, mvn):
         # plt.imshow(aImg, cmap=plt.cm.gray)
         # plt.show()
         imgs.append(aImg)
-        bSize = len(bList)
-        imgBatched = np.zeros((bSize, hei, imgW, 1), dtype='float32')
-        # batch the image list
-        for idx, img in enumerate(imgs):
-            imgBatched[idx, :, :, 0] = img
+
+    bSize = len(bList)
+    imgBatched = np.zeros((bSize, hei, imgW, 1), dtype='float32')
+    # batch the image list
+    for idx, img in enumerate(imgs):
+        imgBatched[idx, :, :, 0] = img
 
     return imgBatched, seqL
 

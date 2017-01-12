@@ -34,7 +34,7 @@ imgH = 32  # 64
 # Depending on the size the image is skipped or zero padded
 imgW = 2048  # 4096
 image_depth = 1
-nHiddenLSTM1 = 256
+nHiddenLSTM1 = 512
 # Needs to be consistent with subsampling [X] in the model to correctly clean up the data
 subsampling = 12
 
@@ -239,8 +239,9 @@ with tf.Session(graph=graph) as session:
         print('Val: CER ', errVal)
         print('Val: time ', time.time() - timeVS)
         print('Time for loading validation data: ', tVL)
-        # Write a checkpoint.
-        saveTime =  time.time()
-        print('Saving...')
-        saver.save(session, global_step=epoch)
-        print('Time for saving: ', time.time() - saveTime)
+        # Write a checkpoint every 10 epochs
+        if (epoch+1) % 10 == 0:
+            saveTime =  time.time()
+            print('Saving...')
+            saver.save(session, global_step=epoch)
+            print('Time for saving: ', time.time() - saveTime)
