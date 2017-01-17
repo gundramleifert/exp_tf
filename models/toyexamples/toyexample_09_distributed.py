@@ -35,7 +35,7 @@ server = tf.train.Server(cluster,
                          task_index=FLAGS.task_index)
 
 # config
-batch_size = 1000
+batch_size = 10000
 learning_rate = 0.001
 training_epochs = 20
 logs_path = "/tmp/mnist/1"
