@@ -1,14 +1,14 @@
 '''
-Distributed Tensorflow 0.8.0 example of using data parallelism and share model parameters.
-Trains a simple sigmoid neural network on mnist for 20 epochs on three machines using one parameter server.
+Distributed Tensorflow example of using data parallelism and share model parameters.
+Trains a simple sigmoid neural network on mnist for 20 epochs on three machines using one parameter server. 
 
-Change the hardcoded host urls below with your own hosts.
-Run like this:
+Change the hardcoded host urls below with your own hosts. 
+Run like this: 
 
-pc-01$ python example.py --job_name="ps" --task_index=0
-pc-02$ python example.py --job_name="worker" --task_index=0
-pc-03$ python example.py --job_name="worker" --task_index=1
-pc-04$ python example.py --job_name="worker" --task_index=2
+pc-01$ python example.py --job-name="ps" --task_index=0 
+pc-02$ python example.py --job-name="worker" --task_index=0 
+pc-03$ python example.py --job-name="worker" --task_index=1 
+pc-04$ python example.py --job-name="worker" --task_index=2 
 
 More details here: ischlag.github.io
 '''
@@ -20,12 +20,12 @@ import sys
 import time
 
 # cluster specification
-parameter_servers = ["139.30.31.176:2222"]
-workers = ["139.30.31.13:2222"]
+parameter_servers = ["139.30.31.13:2222"]
+workers = ["139.30.31.176:2222"]
 cluster = tf.train.ClusterSpec({"ps": parameter_servers, "worker": workers})
 
 # input flags
-tf.app.flags.DEFINE_string("job_name", "", "Either 'ps' or 'worker'")
+tf.app.flags.DEFINE_string("job_name", "worker", "Either 'ps' or 'worker'")
 tf.app.flags.DEFINE_integer("task_index", 0, "Index of task within the job")
 FLAGS = tf.app.flags.FLAGS
 
@@ -35,9 +35,9 @@ server = tf.train.Server(cluster,
                          task_index=FLAGS.task_index)
 
 # config
-batch_size = 100
-learning_rate = 0.0005
-training_epochs = 100
+batch_size = 10000
+learning_rate = 0.001
+training_epochs = 20
 logs_path = "/tmp/mnist/1"
 
 # load mnist data set
@@ -94,21 +94,20 @@ elif FLAGS.job_name == "worker":
         with tf.name_scope('train'):
             # optimizer is an "operation" which we can execute in a session
             grad_op = tf.train.GradientDescentOptimizer(learning_rate)
-            '''
-            rep_op = tf.train.SyncReplicasOptimizer(grad_op,
-                                                                                    replicas_to_aggregate=len(workers),
-                                                                                     replica_id=FLAGS.task_index,
-                                                                                     total_num_replicas=len(workers),
-                                                                                     use_locking=True
-                                                                                     )
-             train_op = rep_op.minimize(cross_entropy, global_step=global_step)
-             '''
-            train_op = grad_op.minimize(cross_entropy, global_step=global_step)
 
-        '''
+            rep_op = tf.train.SyncReplicasOptimizer(grad_op,
+                                                    replicas_to_aggregate=10,
+                                                    replica_id=FLAGS.task_index,
+                                                    total_num_replicas=len(workers),
+                                                    use_locking=True
+                                                    )
+            train_op = rep_op.minimize(cross_entropy, global_step=global_step)
+
+            # train_op = grad_op.minimize(cross_entropy, global_step=global_step)
+
+
         init_token_op = rep_op.get_init_tokens_op()
         chief_queue_runner = rep_op.get_chief_queue_runner()
-        '''
 
         with tf.name_scope('Accuracy'):
             # accuracy
@@ -130,22 +129,20 @@ elif FLAGS.job_name == "worker":
 
     begin_time = time.time()
     frequency = 100
-    print("wait for others...")
     with sv.prepare_or_wait_for_session(server.target) as sess:
-        print("wait for others... [DONE]")
-        '''
+
         # is chief
         if FLAGS.task_index == 0:
-            sv.start_queue_runners(sess, [chief_queue_runner])
-            sess.run(init_token_op)
-        '''
+          sv.start_queue_runners(sess, [chief_queue_runner])
+          sess.run(init_token_op)
+
         # create log writer object (this will log on every machine)
         writer = tf.train.SummaryWriter(logs_path, graph=tf.get_default_graph())
 
         # perform training cycles
         start_time = time.time()
         for epoch in range(training_epochs):
-            print("task_index = {} job_name = {}".format(FLAGS.task_index,FLAGS.job_name))
+
             # number of batches in one epoch
             batch_count = int(mnist.train.num_examples / batch_size)
 
