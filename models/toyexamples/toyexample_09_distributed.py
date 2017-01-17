@@ -94,16 +94,16 @@ elif FLAGS.job_name == "worker":
         with tf.name_scope('train'):
             # optimizer is an "operation" which we can execute in a session
             grad_op = tf.train.GradientDescentOptimizer(learning_rate)
-            '''
+
             rep_op = tf.train.SyncReplicasOptimizer(grad_op,
-                                                replicas_to_aggregate=len(workers),
-                                                replica_id=FLAGS.task_index,
-                                                total_num_replicas=len(workers),
-                                                use_locking=True
-                                                )
+                                                    replicas_to_aggregate=len(workers),
+                                                    replica_id=FLAGS.task_index,
+                                                    total_num_replicas=len(workers),
+                                                    use_locking=True
+                                                    )
             train_op = rep_op.minimize(cross_entropy, global_step=global_step)
-            '''
-            train_op = grad_op.minimize(cross_entropy, global_step=global_step)
+
+            # train_op = grad_op.minimize(cross_entropy, global_step=global_step)
 
         '''
         init_token_op = rep_op.get_init_tokens_op()
