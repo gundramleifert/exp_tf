@@ -21,7 +21,8 @@ import time
 
 # cluster specification
 parameter_servers = ["139.30.31.13:2222"]
-workers = ["139.30.31.186:2222", "139.30.31.176:2222"]
+#workers = ["139.30.31.186:2222", "139.30.31.176:2222"]
+workers = ["139.30.31.176:2222"]
 cluster = tf.train.ClusterSpec({"ps": parameter_servers, "worker": workers})
 
 # input flags
@@ -39,6 +40,7 @@ batch_size = 10000
 learning_rate = 0.001
 training_epochs = 20
 logs_path = "/tmp/mnist/1"
+sync_replica = True
 
 # load mnist data set
 from tensorflow.examples.tutorials.mnist import input_data
@@ -94,16 +96,16 @@ elif FLAGS.job_name == "worker":
         with tf.name_scope('train'):
             # optimizer is an "operation" which we can execute in a session
             grad_op = tf.train.GradientDescentOptimizer(learning_rate)
-
-            rep_op = tf.train.SyncReplicasOptimizer(grad_op,
-                                                    replicas_to_aggregate=len(workers),
-                                                    replica_id=FLAGS.task_index,
-                                                    total_num_replicas=len(workers),
-                                                    use_locking=True
-                                                    )
-            train_op = rep_op.minimize(cross_entropy, global_step=global_step)
-
-            # train_op = grad_op.minimize(cross_entropy, global_step=global_step)
+            if sync_replica:
+                rep_op = tf.train.SyncReplicasOptimizer(grad_op,
+                                                        replicas_to_aggregate=len(workers),
+                                                        replica_id=FLAGS.task_index,
+                                                        total_num_replicas=len(workers),
+                                                        use_locking=True
+                                                        )
+                train_op = rep_op.minimize(cross_entropy, global_step=global_step)
+            else:
+                train_op = grad_op.minimize(cross_entropy, global_step=global_step)
 
         init_token_op = rep_op.get_init_tokens_op()
         chief_queue_runner = rep_op.get_chief_queue_runner()
