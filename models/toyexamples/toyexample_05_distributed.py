@@ -22,7 +22,7 @@ import time
 # cluster specification
 parameter_servers = ["139.30.31.13:2222"]
 #workers = ["139.30.31.186:2222", "139.30.31.176:2222"]
-workers = ["139.30.31.176:2222", "139.30.31.176:2223"]
+workers = ["139.30.31.176:2222"]
 cluster = tf.train.ClusterSpec({"ps": parameter_servers, "worker": workers})
 
 # input flags
