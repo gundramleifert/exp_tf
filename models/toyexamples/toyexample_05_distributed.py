@@ -46,6 +46,8 @@ sync_replica = True
 from tensorflow.examples.tutorials.mnist import input_data
 
 mnist = input_data.read_data_sets('MNIST_data', one_hot=True)
+print("job_name = {}".format(FLAGS.job_name))
+print("task_index = {}".format(FLAGS.task_index))
 
 if FLAGS.job_name == "ps":
     server.join()
