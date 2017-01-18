@@ -106,11 +106,11 @@ elif FLAGS.job_name == "worker":
                                                         use_locking=True
                                                         )
                 train_op = rep_op.minimize(cross_entropy, global_step=global_step)
+                init_token_op = rep_op.get_init_tokens_op()
+                chief_queue_runner = rep_op.get_chief_queue_runner()
             else:
                 train_op = grad_op.minimize(cross_entropy, global_step=global_step)
 
-        init_token_op = rep_op.get_init_tokens_op()
-        chief_queue_runner = rep_op.get_chief_queue_runner()
 
         with tf.name_scope('Accuracy'):
             # accuracy
@@ -135,7 +135,7 @@ elif FLAGS.job_name == "worker":
     with sv.prepare_or_wait_for_session(server.target) as sess:
 
         # is chief
-        if FLAGS.task_index == 0:
+        if sync_replica and FLAGS.task_index == 0:
             sv.start_queue_runners(sess, [chief_queue_runner])
             sess.run(init_token_op)
 
