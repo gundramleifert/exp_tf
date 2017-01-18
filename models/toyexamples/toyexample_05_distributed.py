@@ -20,14 +20,14 @@ import sys
 import time
 
 # cluster specification
-parameter_servers = ["139.30.31.13:2222"]
-#workers = ["139.30.31.186:2222", "139.30.31.176:2222"]
-workers = ["139.30.31.176:2222"]
+parameter_servers = ["139.30.31.176:2222"]
+workers = ["139.30.31.13:2223",
+           "139.30.31.176:2224"]
 cluster = tf.train.ClusterSpec({"ps": parameter_servers, "worker": workers})
 
 # input flags
-tf.app.flags.DEFINE_string("job_name", "worker", "Either 'ps' or 'worker'")
-tf.app.flags.DEFINE_integer("task_index", 0, "Index of task within the job")
+tf.app.flags.DEFINE_string("job_name", "", "Either 'ps' or 'worker'")
+tf.app.flags.DEFINE_integer("task_index", "", "Index of task within the job")
 FLAGS = tf.app.flags.FLAGS
 
 # start a server for a specific task
@@ -36,7 +36,7 @@ server = tf.train.Server(cluster,
                          task_index=FLAGS.task_index)
 
 # config
-batch_size = 10000
+batch_size = 100
 learning_rate = 0.001
 training_epochs = 20
 logs_path = "/tmp/mnist/1"
@@ -46,8 +46,6 @@ sync_replica = False
 from tensorflow.examples.tutorials.mnist import input_data
 
 mnist = input_data.read_data_sets('MNIST_data', one_hot=True)
-print("job_name = {}".format(FLAGS.job_name))
-print("task_index = {}".format(FLAGS.task_index))
 
 if FLAGS.job_name == "ps":
     server.join()
@@ -106,11 +104,12 @@ elif FLAGS.job_name == "worker":
                                                         use_locking=True
                                                         )
                 train_op = rep_op.minimize(cross_entropy, global_step=global_step)
-                init_token_op = rep_op.get_init_tokens_op()
-                chief_queue_runner = rep_op.get_chief_queue_runner()
             else:
                 train_op = grad_op.minimize(cross_entropy, global_step=global_step)
 
+        if sync_replica:
+            init_token_op = rep_op.get_init_tokens_op()
+            chief_queue_runner = rep_op.get_chief_queue_runner()
 
         with tf.name_scope('Accuracy'):
             # accuracy
@@ -133,11 +132,11 @@ elif FLAGS.job_name == "worker":
     begin_time = time.time()
     frequency = 100
     with sv.prepare_or_wait_for_session(server.target) as sess:
-
-        # is chief
-        if sync_replica and FLAGS.task_index == 0:
-            sv.start_queue_runners(sess, [chief_queue_runner])
-            sess.run(init_token_op)
+        if sync_replica:
+            # is chief
+            if FLAGS.task_index == 0:
+                sv.start_queue_runners(sess, [chief_queue_runner])
+                sess.run(init_token_op)
 
         # create log writer object (this will log on every machine)
         writer = tf.train.SummaryWriter(logs_path, graph=tf.get_default_graph())
