@@ -15,8 +15,8 @@ from random import shuffle
 import os
 import time
 import numpy as np
-# import matplotlib.pyplot as plt
-# import warnings
+
+
 def inference(images, seqLen, keep_prob, phase_train):
     """
 
@@ -133,7 +133,7 @@ nHiddenLSTM1 = 512
 # Needs to be consistent with subsampling [X] in the model to correctly clean up the data
 subsampling = 12
 
-#PARAMETER FOR DISTRIBUTED
+# PARAMETER FOR DISTRIBUTED
 sync_replica = True
 num_agregate = 100
 
@@ -169,7 +169,6 @@ elif FLAGS.job_name == "worker":
     numT = 2048  # number of training samples per epoch
     stepsPerEpochTrain = numT / batchSize
     stepsPerEpochVal = len(valList) / batchSize
-
 
     # Between-graph replication
     with tf.device(tf.train.replica_device_setter(
@@ -248,7 +247,8 @@ elif FLAGS.job_name == "worker":
                         mvn=True)
                     tTL += time.time() - timeTemp
                     feedDict = {inputX: batchInputs, targetIxs: batchTargetIdxs, targetVals: batchTargetVals,
-                                targetShape: batchTargetShape, seqLengths: batchSeqLengths, keep_prob: 0.5, trainIN: True}
+                                targetShape: batchTargetShape, seqLengths: batchSeqLengths, keep_prob: 0.5,
+                                trainIN: True}
                     _, lossB, aErr = session.run([grad_op, loss, err], feed_dict=feedDict)
                     lossT += lossB
                     errT += aErr
@@ -277,7 +277,8 @@ elif FLAGS.job_name == "worker":
                     )
                     tVL += time.time() - timeTemp
                     feedDict = {inputX: batchInputs, targetIxs: batchTargetIdxs, targetVals: batchTargetVals,
-                                targetShape: batchTargetShape, seqLengths: batchSeqLengths, keep_prob: 1.0, trainIN: False}
+                                targetShape: batchTargetShape, seqLengths: batchSeqLengths, keep_prob: 1.0,
+                                trainIN: False}
                     lossB, aErr = session.run([loss, err], feed_dict=feedDict)
                     # lossB, aErr, sE, sL = session.run([loss, err, err_val, loss_val], feed_dict=feedDict)
                     # writer.add_summary(sE, epoch*stepsPerEpocheVal + bStep)
@@ -290,8 +291,8 @@ elif FLAGS.job_name == "worker":
                 print('Val: time ', time.time() - timeVS)
                 print('Time for loading validation data: ', tVL)
                 # Write a checkpoint every 10 epochs
-                if (epoch+1) % 10 == 0:
-                    saveTime =  time.time()
+                if (epoch + 1) % 10 == 0:
+                    saveTime = time.time()
                     print('Saving...')
                     saver.save(session, global_step=epoch)
                     print('Time for saving: ', time.time() - saveTime)

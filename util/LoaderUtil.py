@@ -1,5 +1,4 @@
 from __future__ import print_function
-import matplotlib.pyplot as plt
 import numpy as np
 from scipy import misc
 import STR2CTC
@@ -135,16 +134,20 @@ def clean_list(list, imgW, cm, subsampling=-1):
                 continue
             res.append(path)
     print("Skipped {} out of {} images...".format(countC + countW + countS, len(list)))
-    print("...{} too big images, {} images where subsampling is too much and additionally {} images with unknown characters.".format(countW, countS, countC))
+    print(
+        "...{} too big images, {} images where subsampling is too much and additionally {} images with unknown characters.".format(
+            countW, countS, countC))
     return res
 
 
 if __name__ == '__main__':
+    import matplotlib.pyplot as plt
     os.chdir("..")
     list = read_image_list('./resources/lp_only_train.lst')
     imgBatches, seqL = get_list_vals(list, STR2CTC.get_charmap_lp(), 100)
     # print(seqL)
     print(imgBatches.shape)
     print(imgBatches.dtype)
+
     plt.imshow(imgBatches[129], cmap=plt.cm.gray)
     plt.show()
