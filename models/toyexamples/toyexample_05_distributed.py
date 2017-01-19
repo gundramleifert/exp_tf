@@ -99,7 +99,7 @@ elif FLAGS.job_name == "worker":
             if sync_replica:
                 if num_agregate < 0:
                     num_agregate = len(workers)
-                rep_op = tf.train.SyncReplicasOptimizer(grad_op,
+                rep_op = tf.train.SyncReplicasOptimizerV2(grad_op,
                                                         replicas_to_aggregate=num_agregate,
                                                         replica_id=FLAGS.task_index,
                                                         total_num_replicas=len(workers),
