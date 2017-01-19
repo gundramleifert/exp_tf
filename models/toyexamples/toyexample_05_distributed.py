@@ -40,7 +40,7 @@ batch_size = 1000
 learning_rate = 0.001
 training_epochs = 20
 logs_path = "/tmp/mnist/1"
-sync_replica = False
+sync_replica = True
 
 # load mnist data set
 from tensorflow.examples.tutorials.mnist import input_data
