@@ -153,6 +153,7 @@ server = tf.train.Server(cluster,
                          task_index=FLAGS.task_index)
 
 if FLAGS.job_name == "ps":
+    print("in parameter server mode...")
     server.join()
 elif FLAGS.job_name == "worker":
 
