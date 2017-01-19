@@ -36,12 +36,12 @@ server = tf.train.Server(cluster,
                          task_index=FLAGS.task_index)
 
 # config
-batch_size = 1000
+batch_size = 100
 learning_rate = 0.001
 training_epochs = 20
 logs_path = "/tmp/mnist/1"
 sync_replica = True
-
+num_agregate = 100
 # load mnist data set
 from tensorflow.examples.tutorials.mnist import input_data
 
@@ -97,8 +97,10 @@ elif FLAGS.job_name == "worker":
             # optimizer is an "operation" which we can execute in a session
             grad_op = tf.train.GradientDescentOptimizer(learning_rate)
             if sync_replica:
+                if num_agregate < 0:
+                    num_agregate = len(workers)
                 rep_op = tf.train.SyncReplicasOptimizer(grad_op,
-                                                        replicas_to_aggregate=len(workers),
+                                                        replicas_to_aggregate=num_agregate,
                                                         replica_id=FLAGS.task_index,
                                                         total_num_replicas=len(workers),
                                                         use_locking=True
