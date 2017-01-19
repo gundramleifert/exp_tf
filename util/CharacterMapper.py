@@ -3,13 +3,13 @@ from __future__ import print_function
 
 # from idlelib.PyParse import ch
 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import numpy as np
-from __builtin__ import unicode
-from numpy.core.numerictypes import val
-from pip import index
-from scipy import misc
-import os
+# from __builtin__ import unicode
+# from numpy.core.numerictypes import val
+# from pip import index
+# from scipy import misc
+# import os
 import codecs
 import string
 
