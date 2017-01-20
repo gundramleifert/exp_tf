@@ -195,12 +195,12 @@ elif FLAGS.job_name == "worker":
             loss = loss(logits3d, targetY, seqAfterConv)
             saver = PrefixSaver('network', './private/models/iam_05_distributed/')
             # optimizer = tf.train.MomentumOptimizer(learningRate, momentum).minimize(loss)
-            optimizer = tf.train.AdamOptimizer()
+            grad_op = tf.train.AdamOptimizer()
 
             if sync_replica:
                 if num_agregate < 0:
                     num_agregate = len(workers)
-                rep_op = tf.train.SyncReplicasOptimizerV2(optimizer,
+                rep_op = tf.train.SyncReplicasOptimizerV2(grad_op,
                                                           replicas_to_aggregate=num_agregate,
                                                           # replica_id=FLAGS.task_index,
                                                           total_num_replicas=len(workers),
@@ -208,7 +208,7 @@ elif FLAGS.job_name == "worker":
                                                           )
                 train_op = rep_op.minimize(loss, global_step=global_step)
             else:
-                train_op = optimizer.minimize(loss, global_step=global_step)
+                train_op = grad_op.minimize(loss, global_step=global_step)
 
         if sync_replica:
             init_token_op = rep_op.get_init_tokens_op()
