@@ -215,10 +215,10 @@ elif FLAGS.job_name == "worker":
             chief_queue_runner = rep_op.get_chief_queue_runner()
 
             # pred = tf.to_int32(ctc.ctc_beam_search_decoder(logits3d, seqAfterConv, merge_repeated=False)[0][0])
-            pred = tf.to_int32(ctc.ctc_greedy_decoder(logits3d, seqAfterConv)[0][0])
-            edist = tf.edit_distance(pred, targetY, normalize=False)
-            tgtLens = tf.to_float(tf.size(targetY.values))
-            err = tf.reduce_sum(edist) / tgtLens
+        pred = tf.to_int32(ctc.ctc_greedy_decoder(logits3d, seqAfterConv)[0][0])
+        edist = tf.edit_distance(pred, targetY, normalize=False)
+        tgtLens = tf.to_float(tf.size(targetY.values))
+        err = tf.reduce_sum(edist) / tgtLens
 
         with tf.Session(graph=graph) as session:
             # writer = tf.train.SummaryWriter('./log', session.graph)
