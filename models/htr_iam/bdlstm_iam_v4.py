@@ -195,7 +195,7 @@ elif FLAGS.job_name == "worker":
             loss = loss(logits3d, targetY, seqAfterConv)
             saver = PrefixSaver('network', './private/models/iam_05_distributed/')
             # optimizer = tf.train.MomentumOptimizer(learningRate, momentum).minimize(loss)
-            optimizer = tf.train.AdamOptimizer().m
+            optimizer = tf.train.AdamOptimizer()
 
             if sync_replica:
                 if num_agregate < 0:
