@@ -210,89 +210,89 @@ elif FLAGS.job_name == "worker":
             else:
                 train_op = grad_op.minimize(loss, global_step=global_step)
 
-        if sync_replica:
-            init_token_op = rep_op.get_init_tokens_op()
-            chief_queue_runner = rep_op.get_chief_queue_runner()
+            if sync_replica:
+                init_token_op = rep_op.get_init_tokens_op()
+                chief_queue_runner = rep_op.get_chief_queue_runner()
 
             # pred = tf.to_int32(ctc.ctc_beam_search_decoder(logits3d, seqAfterConv, merge_repeated=False)[0][0])
-        pred = tf.to_int32(ctc.ctc_greedy_decoder(logits3d, seqAfterConv)[0][0])
-        edist = tf.edit_distance(pred, targetY, normalize=False)
-        tgtLens = tf.to_float(tf.size(targetY.values))
-        err = tf.reduce_sum(edist) / tgtLens
+            pred = tf.to_int32(ctc.ctc_greedy_decoder(logits3d, seqAfterConv)[0][0])
+            edist = tf.edit_distance(pred, targetY, normalize=False)
+            tgtLens = tf.to_float(tf.size(targetY.values))
+            err = tf.reduce_sum(edist) / tgtLens
 
-        with tf.Session(graph=graph) as session:
-            # writer = tf.train.SummaryWriter('./log', session.graph)
-            print('Initializing')
-            tf.global_variables_initializer().run()
-            for epoch in range(nEpochs):
-                workList = trainList[:]
-                shuffle(workList)
-                workList = workList[0:numT]
-                print('Epoch', epoch + 1, '...')
-                lossT = 0
-                errT = 0
-                timeTS = time.time()
-                tTL = 0
-                for bStep in range(stepsPerEpochTrain):
-                    bList, workList = workList[:batchSize], workList[batchSize:]
-                    timeTemp = time.time()
-                    batchInputs, \
-                    batchSeqLengths, \
-                    batchTargetIdxs, \
-                    batchTargetVals, \
-                    batchTargetShape = get_list_vals(
-                        bList,
-                        cm,
-                        imgW,
-                        mvn=True)
-                    tTL += time.time() - timeTemp
-                    feedDict = {inputX: batchInputs, targetIxs: batchTargetIdxs, targetVals: batchTargetVals,
-                                targetShape: batchTargetShape, seqLengths: batchSeqLengths, keep_prob: 0.5,
-                                trainIN: True}
-                    _, lossB, aErr = session.run([train_op, loss, err], feed_dict=feedDict)
-                    lossT += lossB
-                    errT += aErr
-                print('Train: CTC-loss ', lossT)
-                cerT = errT / stepsPerEpochTrain
-                print('Train: CER ', cerT)
-                print('Train: time ', time.time() - timeTS)
-                print('Time for loading train data: ', tTL)
-                workList = valList[:]
-                errV = 0
-                lossV = 0
-                timeVS = time.time()
-                tVL = 0
-                for bStep in range(stepsPerEpochVal):
-                    bList, workList = workList[:batchSize], workList[batchSize:]
-                    timeTemp = time.time()
-                    batchInputs, \
-                    batchSeqLengths, \
-                    batchTargetIdxs, \
-                    batchTargetVals, \
-                    batchTargetShape = get_list_vals(
-                        bList,
-                        cm,
-                        imgW,
-                        mvn=True
-                    )
-                    tVL += time.time() - timeTemp
-                    feedDict = {inputX: batchInputs, targetIxs: batchTargetIdxs, targetVals: batchTargetVals,
-                                targetShape: batchTargetShape, seqLengths: batchSeqLengths, keep_prob: 1.0,
-                                trainIN: False}
-                    lossB, aErr = session.run([loss, err], feed_dict=feedDict)
-                    # lossB, aErr, sE, sL = session.run([loss, err, err_val, loss_val], feed_dict=feedDict)
-                    # writer.add_summary(sE, epoch*stepsPerEpocheVal + bStep)
-                    # writer.add_summary(sL, epoch * stepsPerEpocheVal + bStep)
-                    lossV += lossB
-                    errV += aErr
-                print('Val: CTC-loss ', lossV)
-                errVal = errV / stepsPerEpochVal
-                print('Val: CER ', errVal)
-                print('Val: time ', time.time() - timeVS)
-                print('Time for loading validation data: ', tVL)
-                # Write a checkpoint every 10 epochs
-                if (epoch + 1) % 10 == 0:
-                    saveTime = time.time()
-                    print('Saving...')
-                    saver.save(session, global_step=epoch)
-                    print('Time for saving: ', time.time() - saveTime)
+            with tf.Session(graph=graph) as session:
+                # writer = tf.train.SummaryWriter('./log', session.graph)
+                print('Initializing')
+                tf.global_variables_initializer().run()
+                for epoch in range(nEpochs):
+                    workList = trainList[:]
+                    shuffle(workList)
+                    workList = workList[0:numT]
+                    print('Epoch', epoch + 1, '...')
+                    lossT = 0
+                    errT = 0
+                    timeTS = time.time()
+                    tTL = 0
+                    for bStep in range(stepsPerEpochTrain):
+                        bList, workList = workList[:batchSize], workList[batchSize:]
+                        timeTemp = time.time()
+                        batchInputs, \
+                        batchSeqLengths, \
+                        batchTargetIdxs, \
+                        batchTargetVals, \
+                        batchTargetShape = get_list_vals(
+                            bList,
+                            cm,
+                            imgW,
+                            mvn=True)
+                        tTL += time.time() - timeTemp
+                        feedDict = {inputX: batchInputs, targetIxs: batchTargetIdxs, targetVals: batchTargetVals,
+                                    targetShape: batchTargetShape, seqLengths: batchSeqLengths, keep_prob: 0.5,
+                                    trainIN: True}
+                        _, lossB, aErr = session.run([train_op, loss, err], feed_dict=feedDict)
+                        lossT += lossB
+                        errT += aErr
+                    print('Train: CTC-loss ', lossT)
+                    cerT = errT / stepsPerEpochTrain
+                    print('Train: CER ', cerT)
+                    print('Train: time ', time.time() - timeTS)
+                    print('Time for loading train data: ', tTL)
+                    workList = valList[:]
+                    errV = 0
+                    lossV = 0
+                    timeVS = time.time()
+                    tVL = 0
+                    for bStep in range(stepsPerEpochVal):
+                        bList, workList = workList[:batchSize], workList[batchSize:]
+                        timeTemp = time.time()
+                        batchInputs, \
+                        batchSeqLengths, \
+                        batchTargetIdxs, \
+                        batchTargetVals, \
+                        batchTargetShape = get_list_vals(
+                            bList,
+                            cm,
+                            imgW,
+                            mvn=True
+                        )
+                        tVL += time.time() - timeTemp
+                        feedDict = {inputX: batchInputs, targetIxs: batchTargetIdxs, targetVals: batchTargetVals,
+                                    targetShape: batchTargetShape, seqLengths: batchSeqLengths, keep_prob: 1.0,
+                                    trainIN: False}
+                        lossB, aErr = session.run([loss, err], feed_dict=feedDict)
+                        # lossB, aErr, sE, sL = session.run([loss, err, err_val, loss_val], feed_dict=feedDict)
+                        # writer.add_summary(sE, epoch*stepsPerEpocheVal + bStep)
+                        # writer.add_summary(sL, epoch * stepsPerEpocheVal + bStep)
+                        lossV += lossB
+                        errV += aErr
+                    print('Val: CTC-loss ', lossV)
+                    errVal = errV / stepsPerEpochVal
+                    print('Val: CER ', errVal)
+                    print('Val: time ', time.time() - timeVS)
+                    print('Time for loading validation data: ', tVL)
+                    # Write a checkpoint every 10 epochs
+                    if (epoch + 1) % 10 == 0:
+                        saveTime = time.time()
+                        print('Saving...')
+                        saver.save(session, global_step=epoch)
+                        print('Time for saving: ', time.time() - saveTime)
