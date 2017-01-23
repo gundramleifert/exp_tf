@@ -179,7 +179,7 @@ elif FLAGS.job_name == "worker":
         graph = tf.Graph()
         with graph.as_default():
             # count the number of updates
-            with tf.variable_scope("/job:ps/task:%d"):
+            with tf.variable_scope("/job:ps/task:0"):
                 global_step = tf.get_variable('global_step', [],
                                               initializer=tf.constant_initializer(0),
                                               trainable=False)
