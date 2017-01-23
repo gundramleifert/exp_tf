@@ -173,13 +173,13 @@ elif FLAGS.job_name == "worker":
     # Between-graph replication
     with tf.device(tf.train.replica_device_setter(
             worker_device="/job:worker/task:%d" % FLAGS.task_index,
-            cluster=cluster)):
+            cluster=cluster)) as device:
 
         print('Defining graph')
         graph = tf.Graph()
         with graph.as_default():
             # count the number of updates
-            with tf.variable_scope('global_step_scope'):
+            with tf.variable_scope("/job:ps/task:%d"):
                 global_step = tf.get_variable('global_step', [],
                                               initializer=tf.constant_initializer(0),
                                               trainable=False)
