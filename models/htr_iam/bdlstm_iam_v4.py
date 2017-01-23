@@ -134,7 +134,7 @@ nHiddenLSTM1 = 512
 subsampling = 12
 
 # PARAMETER FOR DISTRIBUTED
-sync_replica = True
+sync_replica = False
 num_agregate = -1
 
 parameter_servers = ["139.30.31.176:2222"]
