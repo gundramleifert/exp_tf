@@ -179,9 +179,10 @@ elif FLAGS.job_name == "worker":
         graph = tf.Graph()
         with graph.as_default():
             # count the number of updates
-            global_step = tf.get_variable('global_step', [],
-                                          initializer=tf.constant_initializer(0),
-                                          trainable=False)
+            with tf.variable_scope('global_step_scope'):
+                global_step = tf.get_variable('global_step', [],
+                                              initializer=tf.constant_initializer(0),
+                                              trainable=False)
             ####Graph input
             inputX = tf.placeholder(tf.float32, shape=(batchSize, imgH, imgW, image_depth))
             targetIxs = tf.placeholder(tf.int64)
@@ -231,7 +232,7 @@ elif FLAGS.job_name == "worker":
                         sv.start_queue_runners(session, [chief_queue_runner])
                         session.run(init_token_op)
 
-            # with tf.Session(graph=graph) as session:
+                        # with tf.Session(graph=graph) as session:
                 # writer = tf.train.SummaryWriter('./log', session.graph)
                 print('Initializing')
                 tf.global_variables_initializer().run()
@@ -307,3 +308,4 @@ elif FLAGS.job_name == "worker":
                         print('Saving...')
                         saver.save(session, global_step=epoch)
                         print('Time for saving: ', time.time() - saveTime)
+            sv.stop(close_summary_writer=True)
