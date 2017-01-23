@@ -219,8 +219,19 @@ elif FLAGS.job_name == "worker":
             edist = tf.edit_distance(pred, targetY, normalize=False)
             tgtLens = tf.to_float(tf.size(targetY.values))
             err = tf.reduce_sum(edist) / tgtLens
+            init_op = tf.initialize_all_variables()
 
-            with tf.Session(graph=graph) as session:
+            sv = tf.train.Supervisor(is_chief=(FLAGS.task_index == 0),
+                                     global_step=global_step,
+                                     init_op=init_op)
+            with sv.prepare_or_wait_for_session(server.target) as session:
+                if sync_replica:
+                    # is chief
+                    if FLAGS.task_index == 0:
+                        sv.start_queue_runners(session, [chief_queue_runner])
+                        session.run(init_token_op)
+
+            # with tf.Session(graph=graph) as session:
                 # writer = tf.train.SummaryWriter('./log', session.graph)
                 print('Initializing')
                 tf.global_variables_initializer().run()
